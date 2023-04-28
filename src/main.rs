@@ -4,10 +4,25 @@ use std::net::SocketAddr;
 use hyper::{Body, Request, Response, Server};
 use hyper::service::{make_service_fn, service_fn};
 use serde::Deserialize;
+use serde_json::value::Number;
 use mysql::prelude::*;
 
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
+
+fn mysql_to_json(x: &mysql::Value) -> serde_json::Value {
+    match x {
+        mysql::Value::NULL => serde_json::Value::Null,
+        mysql::Value::Bytes(x) => serde_json::Value::String(String::from_utf8(x.to_vec()).unwrap()),
+        mysql::Value::Int(x) => serde_json::Value::Number(Number::from_f64(*x as f64).unwrap()),
+        mysql::Value::UInt(x) => serde_json::Value::Number(Number::from_f64(*x as f64).unwrap()),
+        mysql::Value::Float(x) => serde_json::Value::Number(Number::from_f64(*x as f64).unwrap()),
+        mysql::Value::Double(x) => serde_json::Value::Number(Number::from_f64(*x).unwrap()),
+        _ => unimplemented!(),
+        //mysql::Value::Date(y, mon, d, h, m, s, microsec)
+        //mysql::Value::Time(neg, d, h, m, s, microsec)
+    }
+}
 
 #[derive(Deserialize)]
 struct SqlRequest {
@@ -27,11 +42,17 @@ fn sql_request(req: SqlRequest) -> String {
     let mut conn = pool.get_conn().unwrap();
     let mut result = conn.query_iter(req.sql).unwrap();
 
+    let mut rows = Vec::new();
     for row in result.iter().unwrap() {
-        println!("{:?}", row);
+        let row = row.unwrap();
+        let mut cols = Vec::new();
+        for i in 0..row.len() {
+            cols.push(mysql_to_json(&row[i]));
+        }
+        rows.push(cols);
     }
 
-    "".into()
+    serde_json::to_string(&rows).unwrap()
 }
 
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -44,6 +65,7 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
         println!("body {}", body_str);
         let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
         let resp = sql_request(sql);
+        println!("resp {}", resp);
         Ok(Response::new(Body::from(resp)))
     } else {
         let file = File::open(uri).await.unwrap();
