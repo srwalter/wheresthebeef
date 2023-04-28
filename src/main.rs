@@ -60,7 +60,7 @@ fn sql_request(req: SqlRequest) -> String {
 }
 
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let mut uri = req.uri().to_string();
+    let mut uri = req.uri().path().to_string();
     uri.remove(0); // remove the /
     println!("uri {}", uri);
     if uri.starts_with("database") {
