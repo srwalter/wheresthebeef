@@ -42,17 +42,21 @@ fn sql_request(req: SqlRequest) -> String {
     let mut conn = pool.get_conn().unwrap();
     let mut result = conn.query_iter(req.sql).unwrap();
 
-    let mut rows = Vec::new();
-    for row in result.iter().unwrap() {
-        let row = row.unwrap();
-        let mut cols = Vec::new();
-        for i in 0..row.len() {
-            cols.push(mysql_to_json(&row[i]));
+    let mut all_result = Vec::new();
+    while let Some(cursor) = result.iter() {
+        let mut rows = Vec::new();
+        for row in cursor {
+            let row = row.unwrap();
+            let mut cols = Vec::new();
+            for i in 0..row.len() {
+                cols.push(mysql_to_json(&row[i]));
+            }
+            rows.push(cols);
         }
-        rows.push(cols);
+        all_result.push(rows);
     }
 
-    serde_json::to_string(&rows).unwrap()
+    serde_json::to_string(&all_result).unwrap()
 }
 
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
