@@ -11,7 +11,9 @@ function postData(url = '', data = {}) {
 }
 
 function sql_exec(sql) {
-    return postData('http://localhost:8080/database/', { username: 'unpriv', password: 'unpriv', sql: sql });
+    const username = sessionStorage.getItem("username");
+    const password = sessionStorage.getItem("password");
+    return postData('http://localhost:8080/database/', { username: username, password: password, sql: sql });
 }
 
 async function get_schema(proc_name) {
@@ -81,7 +83,52 @@ async function submit_form(proc_name) {
     }
 }
 
+function form_input(label, name, type="text") {
+    var div = document.createElement('div');
+    var p = document.createElement('p');
+    p.textContent = label;
+    div.appendChild(p);
+    var input = document.createElement('input');
+    input.setAttribute('id', name);
+    input.setAttribute('type', type);
+    div.appendChild(input);
+    return div;
+}
+
+async function login() {
+    var form = document.createElement('form');
+    form.setAttribute('action', '');
+
+    const div1 = form_input("Username: ", "username");
+    form.appendChild(div1);
+    const div2 = form_input("Password: ", "password", "password");
+    form.appendChild(div2);
+
+    var submit = document.createElement('input');
+    submit.setAttribute('type', 'submit');
+    submit.setAttribute('value', "Login");
+    form.appendChild(submit);
+
+    form.addEventListener('submit', (event) => {
+        alert("submit");
+        event.preventDefault();
+        const elem1 = document.querySelector('#username');
+        sessionStorage.setItem("username", elem1.value);
+        const elem2 = document.querySelector('#password');
+        sessionStorage.setItem("password", elem2.value);
+        location.reload();
+    });
+
+    document.body.appendChild(form);
+}
+
 async function universal_form(proc_name) {
+    const username = sessionStorage.getItem("username");
+    if (!username) {
+        login();
+        return;
+    }
+
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
     form.setAttribute('id', 'mainform');
@@ -89,13 +136,7 @@ async function universal_form(proc_name) {
 
     for (const e of proc_info) {
         if (e[0] == "IN") {
-            var div = document.createElement('div');
-            var label = document.createElement('p');
-            label.textContent = e[1];
-            div.appendChild(label);
-            var input = document.createElement('input');
-            input.setAttribute('id', e[1]);
-            div.appendChild(input);
+            const div = form_input(e[1], e[1]);
             form.appendChild(div);
         }
     }
