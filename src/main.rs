@@ -45,8 +45,21 @@ fn sql_request(req: SqlRequest) -> String {
     let mut all_result = Vec::new();
     while let Some(cursor) = result.iter() {
         let mut rows = Vec::new();
+
+        let mut first = true;
         for row in cursor {
             let row = row.unwrap();
+
+            // Put the column names first
+            if first {
+                let mut cols = Vec::new();
+                for column in row.columns_ref() {
+                    cols.push(serde_json::Value::String(column.name_str().to_string()));
+                }
+                rows.push(cols);
+                first = false;
+            }
+
             let mut cols = Vec::new();
             for i in 0..row.len() {
                 cols.push(mysql_to_json(&row[i]));
