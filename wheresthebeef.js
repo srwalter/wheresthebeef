@@ -28,6 +28,13 @@ function make_pretty(inputStr) {
     return inputStr;
   }
 
+  if (inputStr[0] == '@') {
+      inputStr = inputStr.slice(1);
+  }
+  if (inputStr[0] == '_') {
+      inputStr = inputStr.slice(1);
+  }
+
   let formattedStr = inputStr[0].toUpperCase();
 
   for (let i = 1; i < inputStr.length; i++) {
@@ -174,7 +181,6 @@ async function callProcedure(proc_name, format_row = format_row_basic) {
 
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
-    form.setAttribute('id', 'mainform');
     form.setAttribute('action', '');
 
     for (const e of proc_info) {
