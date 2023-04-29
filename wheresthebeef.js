@@ -207,15 +207,31 @@ async function logout() {
 async function callProcedureChained(proc_name, next_proc) {
     await callProcedure(proc_name, (row, first) => {
         return format_row_link(row, first, next_proc);
-    });
+    }, 'none');
 }
 
-async function callProcedure(proc_name, format_row = format_row_basic) {
+async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block') {
     const username = sessionStorage.getItem("username");
     if (!username) {
         login();
         return;
     }
+
+    const top_div = document.createElement('div');
+    top_div.style.display = initial_style;
+    var h = document.createElement('h2');
+    var a = document.createElement('a');
+    a.textContent = make_pretty(proc_name);
+    h.appendChild(a);
+    document.body.appendChild(h);
+    h.addEventListener('click', (event) => {
+        if (top_div.style.display == 'none') {
+            top_div.style.display = 'block';
+        } else {
+            top_div.style.display = 'none';
+        }
+    });
+    document.body.appendChild(top_div);
 
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
@@ -239,9 +255,9 @@ async function callProcedure(proc_name, format_row = format_row_basic) {
         submit_form(proc_name, format_row);
     });
 
-    document.body.appendChild(form);
+    top_div.appendChild(form);
 
     var results = document.createElement('div');
     results.setAttribute('id', `results_${proc_name}`);
-    document.body.appendChild(results);
+    top_div.appendChild(results);
 }
