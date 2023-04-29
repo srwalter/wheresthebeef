@@ -129,11 +129,10 @@ async function login() {
     var submit = document.createElement('button');
     submit.className = "btn btn-default";
     submit.setAttribute('type', 'submit');
-    submit.setAttribute('value', "Login");
+    submit.textContent = "Login";
     form.appendChild(submit);
 
     form.addEventListener('submit', (event) => {
-        alert("submit");
         event.preventDefault();
         const elem1 = document.querySelector('#username');
         sessionStorage.setItem("username", elem1.value);
@@ -143,6 +142,11 @@ async function login() {
     });
 
     document.body.appendChild(form);
+}
+
+async function logout() {
+    sessionStorage.setItem("username", "");
+    sessionStorage.setItem("password", "");
 }
 
 async function universal_form(proc_name) {
