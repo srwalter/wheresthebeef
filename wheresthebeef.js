@@ -159,7 +159,7 @@ async function logout() {
     sessionStorage.setItem("password", "");
 }
 
-async function universal_form(proc_name) {
+async function callProcedure(proc_name) {
     const username = sessionStorage.getItem("username");
     if (!username) {
         login();
