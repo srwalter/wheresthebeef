@@ -148,7 +148,7 @@ async function submit_form(proc_name, format_row) {
 
         var first = true;
         for (const row of result) {
-            const tr = format_row(row, first);
+            const tr = format_row(row, first, result[0]);
             table.appendChild(tr);
             first = false;
         }
@@ -286,3 +286,62 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
     results.setAttribute('id', `results_${proc_name}`);
     top_div.appendChild(results);
 }
+
+function prefillForms() {
+    var q = parseQueryString(window.location.search);
+
+    for (const k in q) {
+        var elem = document.querySelector('#' + k);
+        if (elem) {
+            elem.value = q[k];
+        }
+    }
+}
+
+function values_to_query(proc_name, values, column_names) {
+    var q = `?proc=${proc_name}`
+    for (let i=0; i<values.length; i++) {
+        q += '&'
+        q += encodeURIComponent(proc_name);
+        q += '_'
+        q += encodeURIComponent(column_names[i]);
+        q += '='
+        q += encodeURIComponent(values[i]);
+    }
+    return q;
+}
+
+async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
+    await callProcedure(proc_name, (row, first, column_names) => {
+        if (first) {
+            return format_row_basic(row, first);
+        }
+
+        var tr = document.createElement('tr');
+
+        for (const cell of row) {
+            var td = document.createElement('td');
+            td.textContent = make_pretty(cell);
+            tr.appendChild(td);
+        }
+
+        var q = values_to_query(edit_proc, row, column_names);
+        var td = document.createElement('td');
+        tr.appendChild(td);
+        var edit = document.createElement('a')
+        edit.href = url + q;
+        td.appendChild(edit);
+        edit.textContent = 'Edit';
+
+        var q = values_to_query(delete_proc, row, column_names);
+        var td = document.createElement('td');
+        tr.appendChild(td);
+        var edit = document.createElement('a')
+        edit.href = url + q;
+        td.appendChild(edit);
+        edit.textContent = 'Delete';
+
+        return tr;
+    });
+}
+
