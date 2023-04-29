@@ -40,7 +40,25 @@ function make_pretty(inputStr) {
   return formattedStr;
 }
 
-async function submit_form(proc_name) {
+function format_row_basic(row, first) {
+    var tr = document.createElement('tr');
+
+    for (const cell of row) {
+        var td;
+        if (first) {
+            td = document.createElement('th');
+            td.textContent = make_pretty(cell);
+        } else {
+            td = document.createElement('td');
+            td.textContent = cell;
+        }
+        tr.appendChild(td);
+    }
+
+    return tr;
+}
+
+async function submit_form(proc_name, format_row) {
     var proc_info = await get_schema(proc_name);
 
     var sql = `CALL ${proc_name}(`;
@@ -91,20 +109,8 @@ async function submit_form(proc_name) {
 
         var first = true;
         for (const row of result) {
-            var tr = document.createElement('tr');
+            const tr = format_row(row, first);
             table.appendChild(tr);
-
-            for (const cell of row) {
-                var td;
-                if (first) {
-                    td = document.createElement('th');
-                    td.textContent = make_pretty(cell);
-                } else {
-                    td = document.createElement('td');
-                    td.textContent = cell;
-                }
-                tr.appendChild(td);
-            }
             first = false;
         }
         results.appendChild(table);
@@ -159,7 +165,7 @@ async function logout() {
     sessionStorage.setItem("password", "");
 }
 
-async function callProcedure(proc_name) {
+async function callProcedure(proc_name, format_row = format_row_basic) {
     const username = sessionStorage.getItem("username");
     if (!username) {
         login();
@@ -186,7 +192,7 @@ async function callProcedure(proc_name) {
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        submit_form(proc_name);
+        submit_form(proc_name, format_row);
     });
 
     document.body.appendChild(form);
