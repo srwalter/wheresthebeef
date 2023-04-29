@@ -18,6 +18,8 @@ function sql_exec(sql) {
 
 async function get_schema(proc_name) {
     let result = await sql_exec(`SELECT PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_NAME = "${proc_name}";`);
+    // Get rid of the column names
+    result[0].shift();
     return result[0];
 }
 
@@ -87,15 +89,23 @@ async function submit_form(proc_name) {
         var table = document.createElement('table');
         table.className = "table";
 
+        var first = true;
         for (const row of result) {
             var tr = document.createElement('tr');
             table.appendChild(tr);
 
             for (const cell of row) {
-                var td = document.createElement('td');
-                td.textContent = cell;
+                var td;
+                if (first) {
+                    td = document.createElement('th');
+                    td.textContent = make_pretty(cell);
+                } else {
+                    td = document.createElement('td');
+                    td.textContent = cell;
+                }
                 tr.appendChild(td);
             }
+            first = false;
         }
         results.appendChild(table);
     }
