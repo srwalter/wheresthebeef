@@ -210,6 +210,31 @@ async function callProcedureChained(proc_name, next_proc) {
     }, 'none');
 }
 
+function parseQueryString(queryString) {
+    const params = {};
+    
+    if (!queryString || queryString.length === 0) {
+        return params;
+    }
+
+    // Remove the leading '?' if present
+    if (queryString[0] === '?') {
+        queryString = queryString.substr(1);
+    }
+
+    const keyValuePairs = queryString.split('&');
+
+    for (let i = 0; i < keyValuePairs.length; i++) {
+        const pair = keyValuePairs[i].split('=');
+        const key = decodeURIComponent(pair[0]);
+        const value = pair.length > 1 ? decodeURIComponent(pair[1]) : '';
+
+        params[key] = value;
+    }
+
+    return params;
+}
+
 async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block') {
     const username = sessionStorage.getItem("username");
     if (!username) {
