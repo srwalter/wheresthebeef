@@ -9,6 +9,15 @@ BEGIN
     DEALLOCATE PREPARE stmt;
 END //
 
+DROP PROCEDURE IF EXISTS changePassword //
+CREATE PROCEDURE changePassword (IN password VARCHAR(255))
+BEGIN
+    SET @sql = CONCAT('SET PASSWORD = ''', password, ''';');
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END //
+
 DROP PROCEDURE IF EXISTS grantRole //
 CREATE PROCEDURE grantRole (IN username VARCHAR(255), IN role VARCHAR(255))
 BEGIN
