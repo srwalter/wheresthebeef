@@ -21,6 +21,23 @@ async function get_schema(proc_name) {
     return result[0];
 }
 
+function make_pretty(inputStr) {
+  if (inputStr.length === 0) {
+    return inputStr;
+  }
+
+  let formattedStr = inputStr[0].toUpperCase();
+
+  for (let i = 1; i < inputStr.length; i++) {
+    if (inputStr[i] === inputStr[i].toUpperCase() && inputStr[i] !== ' ') {
+      formattedStr += ' ';
+    }
+    formattedStr += inputStr[i];
+  }
+
+  return formattedStr;
+}
+
 async function submit_form(proc_name) {
     var proc_info = await get_schema(proc_name);
 
@@ -68,6 +85,7 @@ async function submit_form(proc_name) {
 
     for (const result of all_result) {
         var table = document.createElement('table');
+        table.className = "table";
 
         for (const row of result) {
             var tr = document.createElement('tr');
@@ -85,10 +103,14 @@ async function submit_form(proc_name) {
 
 function form_input(label, name, type="text") {
     var div = document.createElement('div');
-    var p = document.createElement('p');
+    div.className = "form-group";
+
+    var p = document.createElement('label');
+    p.setAttribute('for', name);
     p.textContent = label;
     div.appendChild(p);
     var input = document.createElement('input');
+    input.className = "form-control";
     input.setAttribute('id', name);
     input.setAttribute('type', type);
     div.appendChild(input);
@@ -104,7 +126,8 @@ async function login() {
     const div2 = form_input("Password: ", "password", "password");
     form.appendChild(div2);
 
-    var submit = document.createElement('input');
+    var submit = document.createElement('button');
+    submit.className = "btn btn-default";
     submit.setAttribute('type', 'submit');
     submit.setAttribute('value', "Login");
     form.appendChild(submit);
@@ -136,14 +159,15 @@ async function universal_form(proc_name) {
 
     for (const e of proc_info) {
         if (e[0] == "IN") {
-            const div = form_input(e[1], e[1]);
+            const div = form_input(make_pretty(e[1]), e[1]);
             form.appendChild(div);
         }
     }
 
-    var submit = document.createElement('input');
+    var submit = document.createElement('button');
+    submit.className = "btn btn-default";
     submit.setAttribute('type', 'submit');
-    submit.setAttribute('value', proc_name);
+    submit.textContent = make_pretty(proc_name);
     form.appendChild(submit);
 
     form.addEventListener('submit', (event) => {
