@@ -4,41 +4,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <script src="wheresthebeef.js"></script>
         <script>
-
-function format_row_link(row, first) {
-    var tr = document.createElement('tr');
-
-    var first_cell = true;
-    for (const cell of row) {
-        var td;
-        if (first) {
-            td = document.createElement('th');
-            td.textContent = make_pretty(cell);
-        } else {
-            td = document.createElement('td');
-            if (first_cell) {
-                var a = document.createElement('a');
-                a.textContent = cell;
-                td.appendChild(a);
-
-                a.addEventListener('click', (event) => {
-                    const f = document.querySelector('#customerNumber');
-                    f.value = cell;
-                });
-
-            } else {
-                td.textContent = cell;
-            }
-        }
-        first_cell = false;
-        tr.appendChild(td);
-    }
-
-    return tr;
-}
-
 async function onLoad() {
-    await callProcedure('lookupCustomer', format_row_link);
+    await callProcedureChained('lookupCustomer', '#createOrder_customerNumber');
     await callProcedure('createOrder');
 }
         </script>

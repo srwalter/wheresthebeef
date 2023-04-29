@@ -65,6 +65,38 @@ function format_row_basic(row, first) {
     return tr;
 }
 
+function format_row_link(row, first, next_proc) {
+    var tr = document.createElement('tr');
+
+    var first_cell = true;
+    for (const cell of row) {
+        var td;
+        if (first) {
+            td = document.createElement('th');
+            td.textContent = make_pretty(cell);
+        } else {
+            td = document.createElement('td');
+            if (first_cell) {
+                var a = document.createElement('a');
+                a.textContent = cell;
+                td.appendChild(a);
+
+                a.addEventListener('click', (event) => {
+                    const f = document.querySelector(next_proc);
+                    f.value = cell;
+                });
+
+            } else {
+                td.textContent = cell;
+            }
+        }
+        first_cell = false;
+        tr.appendChild(td);
+    }
+
+    return tr;
+}
+
 async function submit_form(proc_name, format_row) {
     var proc_info = await get_schema(proc_name);
 
@@ -170,6 +202,12 @@ async function login() {
 async function logout() {
     sessionStorage.setItem("username", "");
     sessionStorage.setItem("password", "");
+}
+
+async function callProcedureChained(proc_name, next_proc) {
+    await callProcedure(proc_name, (row, first) => {
+        return format_row_link(row, first, next_proc);
+    });
 }
 
 async function callProcedure(proc_name, format_row = format_row_basic) {
