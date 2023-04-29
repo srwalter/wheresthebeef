@@ -80,7 +80,7 @@ async function submit_form(proc_name, format_row) {
         first = false;
 
         if (e[0] == "IN") {
-            var elem = document.querySelector('#'+e[1]);
+            var elem = document.querySelector(`#${proc_name}_${e[1]}`);
             sql += `"${elem.value}"`;
         } else {
             have_output = true;
@@ -107,7 +107,7 @@ async function submit_form(proc_name, format_row) {
 
     var all_result = await sql_exec(sql);
 
-    var results = document.querySelector('#results');
+    var results = document.querySelector(`#results_${proc_name}`);
     results.innerHTML = '';
 
     for (const result of all_result) {
@@ -185,7 +185,7 @@ async function callProcedure(proc_name, format_row = format_row_basic) {
 
     for (const e of proc_info) {
         if (e[0] == "IN") {
-            const div = form_input(make_pretty(e[1]), e[1]);
+            const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
             form.appendChild(div);
         }
     }
@@ -204,6 +204,6 @@ async function callProcedure(proc_name, format_row = format_row_basic) {
     document.body.appendChild(form);
 
     var results = document.createElement('div');
-    results.setAttribute('id', 'results');
+    results.setAttribute('id', `results_${proc_name}`);
     document.body.appendChild(results);
 }
