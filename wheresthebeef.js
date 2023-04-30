@@ -77,7 +77,8 @@ function format_row_link(row, first, next_proc) {
         } else {
             td = document.createElement('td');
             if (first_cell) {
-                var a = document.createElement('a');
+                var a = document.createElement('button');
+                a.className = "btn btn-default";
                 a.textContent = cell;
                 td.appendChild(a);
 
