@@ -113,9 +113,11 @@ async function submit_form(proc_name, format_row) {
 
         if (e[0] == "IN") {
             if (e[1] == "paginate_offset") {
-                sql += '0';
+                const offset = document.querySelector("#pagination_offset").value;
+                sql += offset;
             } else if (e[1] == "paginate_count") {
-                sql += '10';
+                const count = document.querySelector("#pagination_count").value;
+                sql += count;
             } else {
                 var elem = document.querySelector(`#${proc_name}_${e[1]}`);
                 sql += `"${elem.value}"`;
@@ -152,7 +154,7 @@ async function submit_form(proc_name, format_row) {
 
     for (const result of all_result) {
         if (result[0] == '@paginate_total') {
-            total_rows = result[1];
+            total_rows = parseInt(result[1]);
             continue;
         }
 
@@ -166,6 +168,35 @@ async function submit_form(proc_name, format_row) {
             first = false;
         }
         results.appendChild(table);
+    }
+
+    // Add pagination controls
+    if (total_rows > 0) {
+        const ul = document.createElement('ul');
+        ul.className = "pagination";
+        results.appendChild(ul);
+
+        const offset = parseInt(document.querySelector("#pagination_offset").value);
+        const count = parseInt(document.querySelector("#pagination_count").value);
+        const num_pages = parseInt((total_rows + count - 1) / count);
+
+        for (let i=0; i<num_pages; i++) {
+            const li = document.createElement('li');
+            ul.appendChild(li);
+            li.className="page-item";
+            if (offset == i * count) {
+                li.className += " active";
+            }
+
+            const a = document.createElement('a');
+            li.appendChild(a);
+            a.className = "page-link";
+            a.textContent = i+1;
+            a.addEventListener('click', (event) => {
+                document.querySelector("#pagination_offset").value = i * count;
+                submit_form(proc_name, format_row);
+            });
+        }
     }
 }
 
