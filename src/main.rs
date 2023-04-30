@@ -76,11 +76,9 @@ fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let mut uri = req.uri().path().to_string();
     uri.remove(0); // remove the /
-    println!("uri {}", uri);
     if uri.starts_with("database") {
         let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
         let body_str = String::from_utf8(body.to_vec()).unwrap();
-        println!("body {}", body_str);
         let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
         let resp = match sql_request(sql) {
             Ok(resp) => resp,
@@ -90,7 +88,6 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
                 serde_json::to_string(&map).unwrap()
             }
         };
-        println!("resp {}", resp);
         Ok(Response::new(Body::from(resp)))
     } else {
         if let Ok(file) = File::open(uri).await {
