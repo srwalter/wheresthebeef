@@ -1,7 +1,8 @@
 use std::convert::Infallible;
 use std::net::SocketAddr;
+use std::collections::HashMap;
 
-use hyper::{Body, Request, Response, Server};
+use hyper::{Body, Request, Response, Server, StatusCode};
 use hyper::service::{make_service_fn, service_fn};
 use serde::Deserialize;
 use serde_json::value::Number;
@@ -31,16 +32,16 @@ struct SqlRequest {
     sql: String,
 }
 
-fn sql_request(req: SqlRequest) -> String {
+fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
     let opts = mysql::OptsBuilder::new()
         .ip_or_hostname(Some("192.168.1.101"))
         .db_name(Some("wheresthebeef"))
         .user(Some(req.username))
         .pass(Some(req.password));
 
-    let pool = mysql::Pool::new(opts).unwrap();
-    let mut conn = pool.get_conn().unwrap();
-    let mut result = conn.query_iter(req.sql).unwrap();
+    let pool = mysql::Pool::new(opts)?;
+    let mut conn = pool.get_conn()?;
+    let mut result = conn.query_iter(req.sql)?;
 
     let mut all_result = Vec::new();
     while let Some(cursor) = result.iter() {
@@ -48,7 +49,7 @@ fn sql_request(req: SqlRequest) -> String {
 
         let mut first = true;
         for row in cursor {
-            let row = row.unwrap();
+            let row = row?;
 
             // Put the column names first
             if first {
@@ -69,7 +70,7 @@ fn sql_request(req: SqlRequest) -> String {
         all_result.push(rows);
     }
 
-    serde_json::to_string(&all_result).unwrap()
+    Ok(serde_json::to_string(&all_result).unwrap())
 }
 
 async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
@@ -81,13 +82,26 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
         let body_str = String::from_utf8(body.to_vec()).unwrap();
         println!("body {}", body_str);
         let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
-        let resp = sql_request(sql);
+        let resp = match sql_request(sql) {
+            Ok(resp) => resp,
+            Err(err) => {
+                let mut map = HashMap::new();
+                map.insert("error", format!("{:?}", err));
+                serde_json::to_string(&map).unwrap()
+            }
+        };
         println!("resp {}", resp);
         Ok(Response::new(Body::from(resp)))
     } else {
-        let file = File::open(uri).await.unwrap();
-        let body = Body::wrap_stream(FramedRead::new(file, BytesCodec::new()));
-        Ok(Response::new(body))
+        if let Ok(file) = File::open(uri).await {
+            let body = Body::wrap_stream(FramedRead::new(file, BytesCodec::new()));
+            Ok(Response::new(body))
+        } else {
+            Ok(Response::builder()
+               .status(StatusCode::NOT_FOUND)
+               .body(Body::from("Not Found"))
+               .unwrap())
+        }
     }
 }
 
