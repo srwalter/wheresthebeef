@@ -123,7 +123,7 @@ async function submit_form(proc_name, format_row, prev_proc) {
                 const count = document.querySelector("#pagination_count").value;
                 sql += count;
             } else {
-                var elem = document.querySelector(`#${prev_name}_${e[1]}`);
+                var elem = document.querySelector(`#${prev_proc}_${e[1]}`);
                 sql += `"${elem.value}"`;
             }
         } else {
