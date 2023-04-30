@@ -220,7 +220,12 @@ function form_input(label, name, type="text") {
     return div;
 }
 
-async function login() {
+async function checkLogin() {
+    const username = sessionStorage.getItem("username");
+    if (username) {
+        return;
+    }
+
     var form = document.createElement('form');
     form.setAttribute('action', '');
 
@@ -244,7 +249,7 @@ async function login() {
         location.reload();
     });
 
-    const body = document.querySelector(".body-content");
+    const body = document.querySelector("#wheresthebeef");
     body.appendChild(form);
 }
 
@@ -280,16 +285,10 @@ function parseQueryString(queryString) {
 
 // Generate a form for calling a procedure, with the results displayed as tables
 async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
-    const username = sessionStorage.getItem("username");
-    if (!username) {
-        login();
-        return;
-    }
-
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
 
-    const body = document.querySelector(".body-content");
+    const body = document.querySelector("#wheresthebeef");
     if (prev_proc == undefined) {
         var h = document.createElement('h2');
         var a = document.createElement('a');
@@ -339,6 +338,19 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
     var results = document.createElement('div');
     results.setAttribute('id', `results_${proc_name}`);
     top_div.appendChild(results);
+}
+
+// Clear all generated UI elements
+function clearUI() {
+    const body = document.querySelector("#wheresthebeef");
+    body.innerHTML = '';
+}
+
+// Clear all previous UI elements, then generate a form for calling a
+// procedure, with the results displayed as tables
+async function callProcedureClear(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
+    clearUI();
+    await callProcedure(proc_name, format_row, initial_style, prev_proc);
 }
 
 // Generate a form for calling a procedure, the results of which are pushed
