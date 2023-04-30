@@ -97,13 +97,17 @@ function format_row_link(row, first, next_proc) {
     return tr;
 }
 
-async function submit_form(proc_name, format_row) {
+async function submit_form(proc_name, format_row, prev_proc) {
     var proc_info = await get_schema(proc_name);
 
     var sql = `CALL ${proc_name}(`;
 
     var first = true;
     var have_output = false;
+
+    if (prev_proc == undefined) {
+        prev_proc = proc_name;
+    }
 
     for (const e of proc_info) {
         if (!first) {
@@ -119,7 +123,7 @@ async function submit_form(proc_name, format_row) {
                 const count = document.querySelector("#pagination_count").value;
                 sql += count;
             } else {
-                var elem = document.querySelector(`#${proc_name}_${e[1]}`);
+                var elem = document.querySelector(`#${prev_name}_${e[1]}`);
                 sql += `"${elem.value}"`;
             }
         } else {
@@ -194,7 +198,7 @@ async function submit_form(proc_name, format_row) {
             a.textContent = i+1;
             a.addEventListener('click', (event) => {
                 document.querySelector("#pagination_offset").value = i * count;
-                submit_form(proc_name, format_row);
+                submit_form(proc_name, format_row, prev_proc);
             });
         }
     }
@@ -249,12 +253,6 @@ async function logout() {
     sessionStorage.setItem("password", "");
 }
 
-async function callProcedureChained(proc_name, next_proc) {
-    await callProcedure(proc_name, (row, first) => {
-        return format_row_link(row, first, next_proc);
-    }, 'none');
-}
-
 function parseQueryString(queryString) {
     const params = {};
     
@@ -280,7 +278,8 @@ function parseQueryString(queryString) {
     return params;
 }
 
-async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block') {
+// Generate a form for calling a procedure, with the results displayed as tables
+async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
     const username = sessionStorage.getItem("username");
     if (!username) {
         login();
@@ -289,32 +288,38 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
 
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
-    var h = document.createElement('h2');
-    var a = document.createElement('a');
-    a.textContent = make_pretty(proc_name);
-    h.appendChild(a);
+
     const body = document.querySelector(".body-content");
-    body.appendChild(h);
-    h.addEventListener('click', (event) => {
-        if (top_div.style.display == 'none') {
-            top_div.style.display = 'block';
-        } else {
-            top_div.style.display = 'none';
-        }
-    });
+    if (prev_proc == undefined) {
+        var h = document.createElement('h2');
+        var a = document.createElement('a');
+        a.textContent = make_pretty(proc_name);
+        h.appendChild(a);
+        body.appendChild(h);
+
+        h.addEventListener('click', (event) => {
+            if (top_div.style.display == 'none') {
+                top_div.style.display = 'block';
+            } else {
+                top_div.style.display = 'none';
+            }
+        });
+    }
     body.appendChild(top_div);
 
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
     form.setAttribute('action', '');
 
-    for (const e of proc_info) {
-        if (e[0] == "IN") {
-            if (e[1].startsWith("paginate_")) {
-                continue;
+    if (prev_proc == undefined) {
+        for (const e of proc_info) {
+            if (e[0] == "IN") {
+                if (e[1].startsWith("paginate_")) {
+                    continue;
+                }
+                const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
+                form.appendChild(div);
             }
-            const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
-            form.appendChild(div);
         }
     }
 
@@ -326,7 +331,7 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        submit_form(proc_name, format_row);
+        submit_form(proc_name, format_row, prev_proc);
     });
 
     top_div.appendChild(form);
@@ -336,6 +341,16 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
     top_div.appendChild(results);
 }
 
+// Generate a form for calling a procedure, the results of which are pushed
+// into the form for "next_proc"
+async function callProcedureChained(proc_name, next_proc) {
+    await callProcedure(proc_name, (row, first) => {
+        return format_row_link(row, first, next_proc);
+    }, 'none');
+}
+
+// Parse key/value pairs from the query string, and use those to prefill any
+// form elements that match.  This is useful for e.g. modify/update operations.
 function prefillForms() {
     var q = parseQueryString(window.location.search);
 
@@ -360,6 +375,9 @@ function values_to_query(proc_name, values, column_names) {
     return q;
 }
 
+// Generate a form for calling a procedure, with the results displayed as
+// tables.  Each row will have Edit/Delete links that will use the provided URL
+// and edit_proc/delete_proc, respectively.
 async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
     await callProcedure(proc_name, (row, first, column_names) => {
         if (first) {
@@ -392,5 +410,12 @@ async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
 
         return tr;
     });
+}
+
+// Generate a button for calling a procedure, with the results displayed as
+// tables.  The inputs are pulled from the form for "prev_proc" rather than
+// making a new form.
+async function callProcedureShared(proc_name, prev_proc) {
+    return callProcedure(proc_name, undefined, undefined, prev_proc);
 }
 
