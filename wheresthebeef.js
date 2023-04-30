@@ -112,8 +112,14 @@ async function submit_form(proc_name, format_row) {
         first = false;
 
         if (e[0] == "IN") {
-            var elem = document.querySelector(`#${proc_name}_${e[1]}`);
-            sql += `"${elem.value}"`;
+            if (e[1] == "paginate_offset") {
+                sql += '0';
+            } else if (e[1] == "paginate_count") {
+                sql += '10';
+            } else {
+                var elem = document.querySelector(`#${proc_name}_${e[1]}`);
+                sql += `"${elem.value}"`;
+            }
         } else {
             have_output = true;
             sql += '@' + e[1];
@@ -142,7 +148,14 @@ async function submit_form(proc_name, format_row) {
     var results = document.querySelector(`#results_${proc_name}`);
     results.innerHTML = '';
 
+    var total_rows = 0;
+
     for (const result of all_result) {
+        if (result[0] == '@paginate_total') {
+            total_rows = result[1];
+            continue;
+        }
+
         var table = document.createElement('table');
         table.className = "table";
 
@@ -266,6 +279,9 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
 
     for (const e of proc_info) {
         if (e[0] == "IN") {
+            if (e[1].startsWith("paginate_")) {
+                continue;
+            }
             const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
             form.appendChild(div);
         }
@@ -323,7 +339,7 @@ async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
 
         for (const cell of row) {
             var td = document.createElement('td');
-            td.textContent = make_pretty(cell);
+            td.textContent = cell;
             tr.appendChild(td);
         }
 
