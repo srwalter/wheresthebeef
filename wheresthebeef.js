@@ -290,17 +290,28 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
 
     const body = document.querySelector("#wheresthebeef");
     if (prev_proc == undefined) {
-        var h = document.createElement('h2');
+        var h = document.createElement('h3');
+        body.appendChild(h);
+
+        const span = document.createElement('span');
+        h.appendChild(span);
+        if (top_div.style.display == 'none') {
+            span.className = "glyphicon glyphicon-menu-right";
+        } else {
+            span.className = "glyphicon glyphicon-menu-down";
+        }
+
         var a = document.createElement('a');
         a.textContent = make_pretty(proc_name);
         h.appendChild(a);
-        body.appendChild(h);
 
         h.addEventListener('click', (event) => {
             if (top_div.style.display == 'none') {
                 top_div.style.display = 'block';
+                span.className = "glyphicon glyphicon-menu-down";
             } else {
                 top_div.style.display = 'none';
+                span.className = "glyphicon glyphicon-menu-right";
             }
         });
     }
