@@ -10,7 +10,7 @@
         <script>
 function listParts() {
     clearUI();
-    callProcedureEditDelete('listParts', '/form.html', 'modifyPart', 'deletePart');
+    callProcedureEditDelete('listParts', 'index.html', 'modifyPart', 'deletePart');
 }
 async function addToOrder() {
     clearUI();
@@ -24,9 +24,17 @@ async function createOrder() {
     await callProcedureChained('lookupCustomer', '#createOrder_customerNumber');
     await callProcedure('createOrder');
 }
+async function onLoad() {
+    checkLogin();
+    var q = parseQueryString(window.location.search);
+    if (q['proc']) {
+        await callProcedure(q['proc']);
+        prefillForms();
+    }
+}
         </script>
     </head>
-    <body onload="checkLogin();">
+    <body onload="onLoad();">
     <div class="container body-content">
         <input type="hidden" id="pagination_offset" value="0" />
         <input type="hidden" id="pagination_count" value="2" />
