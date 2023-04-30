@@ -196,7 +196,8 @@ async function login() {
         location.reload();
     });
 
-    document.body.appendChild(form);
+    const body = document.querySelector(".body-content");
+    body.appendChild(form);
 }
 
 async function logout() {
@@ -248,7 +249,8 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
     var a = document.createElement('a');
     a.textContent = make_pretty(proc_name);
     h.appendChild(a);
-    document.body.appendChild(h);
+    const body = document.querySelector(".body-content");
+    body.appendChild(h);
     h.addEventListener('click', (event) => {
         if (top_div.style.display == 'none') {
             top_div.style.display = 'block';
@@ -256,7 +258,7 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
             top_div.style.display = 'none';
         }
     });
-    document.body.appendChild(top_div);
+    body.appendChild(top_div);
 
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
