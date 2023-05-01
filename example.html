@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Order Management</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+        <script src="/wheresthebeef.js"></script>
+        <script>
+async function onLoad() {
+    checkLogin();
+    var q = parseQueryString(window.location.search);
+    if (q['proc']) {
+        await callProcedure(q['proc']);
+        prefillForms();
+    }
+}
+        </script>
+    </head>
+    <body onload="onLoad();">
+    <div class="container body-content">
+        <input type="hidden" id="pagination_offset" value="0" />
+        <input type="hidden" id="pagination_count" value="2" />
+        <h2>Example</h2>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Parts <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a onclick="callProcedureClear('createPart');">Create Part</a></li>
+            <li><a onclick="listParts();">List Parts</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Users <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a onclick="callProcedureClear('createUser');">New User</a></li>
+            <li><a onclick="callProcedureClear('grantRole');">Grant Role</a></li>
+            <li><a onclick="callProcedureClear('changePassword');">Change My Password</a></li>
+          </ul>
+        </div>
+        <button class="btn btn-default" onClick="logout();location.reload();">Log Out</button>
+        <div id="wheresthebeef">
+        </div>
+    </div>
+    </body>
+</html>
