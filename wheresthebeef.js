@@ -440,40 +440,45 @@ function values_to_query(proc_name, values, column_names) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as
-// tables.  Each row will have Edit/Delete links that will use the provided URL
-// and edit_proc/delete_proc, respectively.
-async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
+// tables.  Each row will have links that will use the provided URL
+// and procedures
+async function callProcedureLinks(proc_name, url, links) {
     await callProcedure(proc_name, (row, first, column_names) => {
         if (first) {
             return format_row_basic(row, first);
         }
 
-        var tr = document.createElement('tr');
+        const tr = document.createElement('tr');
 
         for (const cell of row) {
-            var td = document.createElement('td');
+            const td = document.createElement('td');
             td.textContent = cell;
             tr.appendChild(td);
         }
 
-        var q = values_to_query(edit_proc, row, column_names);
-        var td = document.createElement('td');
-        tr.appendChild(td);
-        var edit = document.createElement('a')
-        edit.href = url + q;
-        td.appendChild(edit);
-        edit.textContent = 'Edit';
-
-        var q = values_to_query(delete_proc, row, column_names);
-        var td = document.createElement('td');
-        tr.appendChild(td);
-        var edit = document.createElement('a')
-        edit.href = url + q;
-        td.appendChild(edit);
-        edit.textContent = 'Delete';
+        for (const k in links) {
+            const q = values_to_query(links[k], row, column_names);
+            const td = document.createElement('td');
+            tr.appendChild(td);
+            const a = document.createElement('a')
+            td.appendChild(a);
+            a.href = url + q;
+            a.textContent = k;
+        }
 
         return tr;
     });
+}
+
+// Generate a form for calling a procedure, with the results displayed as
+// tables.  Each row will have Edit/Delete links that will use the provided URL
+// and edit_proc/delete_proc, respectively.
+async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
+    const links = {
+        'Edit': edit_proc,
+        'Delete': delete_proc,
+    };
+    await callProcedureLinks(proc_name, url, links);
 }
 
 // Generate a button for calling a procedure, with the results displayed as
