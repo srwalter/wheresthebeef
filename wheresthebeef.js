@@ -376,6 +376,7 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
 
     var submit = document.createElement('button');
     submit.className = "btn btn-default";
+    submit.setAttribute('id', proc_name);
     submit.setAttribute('type', 'submit');
     submit.textContent = make_pretty(proc_name);
     form.appendChild(submit);
@@ -413,6 +414,13 @@ async function callProcedureChained(proc_name, next_proc) {
     }, 'none');
 }
 
+function activateProcedure(proc_name) {
+    var elem = document.querySelector('#' + proc_name);
+    if (elem) {
+        elem.click();
+    }
+}
+
 // Parse key/value pairs from the query string, and use those to prefill any
 // form elements that match.  This is useful for e.g. modify/update operations.
 function prefillForms() {
@@ -423,6 +431,10 @@ function prefillForms() {
         if (elem) {
             elem.value = q[k];
         }
+    }
+
+    if (q['autosubmit']) {
+        activateProcedure(q['autosubmit']);
     }
 }
 
@@ -457,7 +469,18 @@ async function callProcedureLinks(proc_name, url, links) {
         }
 
         for (const k in links) {
-            const q = values_to_query(links[k], row, column_names);
+            var proc_name;
+            var autosubmit = false;
+            if (Array.isArray(links[k])) {
+                proc_name = links[k][0];
+                autosubmit = links[k][1];
+            } else {
+                proc_name = links[k];
+            }
+            var q = values_to_query(proc_name, row, column_names);
+            if (autosubmit) {
+                q += "&autosubmit="+proc_name;
+            }
             const td = document.createElement('td');
             tr.appendChild(td);
             const a = document.createElement('a')

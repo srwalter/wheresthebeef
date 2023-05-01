@@ -13,9 +13,10 @@ procedure.  All that's left in the middle is a fully generic web service that
 takes SQL queries and returns their results as JSON.
 
 Advantages:
- * You can't SQL-inject when the design assumes full client control of the query.
+ * You can't SQL-inject when the design assumes full client control of the query
  * You get user management and RBAC effectively for free, relying on the DBMS
  * No application layer to implement and manage, only database and (a little) front-end
+ * Business logic procedures can be tested from any DBMS client
 
 Ideally, I would like to see even this stub of a middle layer go away.  I think
 one could implement a MySQL client in JavaScript that runs in the browser,
@@ -147,4 +148,10 @@ callProcedureLinks(proc_name, url, links)
 
 This is a more general version of callProcedureEditDelete.  links is a
 dictionary, where keys are link labels and values are the stored procedure
-names.
+names.  The value can also specify if the procedure should be automatically run
+instead of requiring the user to click the button.
+
+activateProcedure(proc_name)
+
+Submit the form for "proc_name".  This can save a click for procedures that
+have no inputs, for example.
