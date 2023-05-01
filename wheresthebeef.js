@@ -23,6 +23,14 @@ async function get_schema(proc_name) {
     return result[0];
 }
 
+async function get_drop_down_options(proc_name) {
+    let result = await sql_exec(`CALL ${proc_name};`);
+    alert(result);
+    // Get rid of the column names
+    result[0].shift();
+    return result[0];
+}
+
 function make_pretty(inputStr) {
   if (inputStr.length === 0) {
     return inputStr;
@@ -221,6 +229,30 @@ function form_input(label, name, type="text") {
     return div;
 }
 
+function form_select(label, name, options) {
+    const div = document.createElement('div');
+    div.className = "form-group";
+
+    const p = document.createElement('label');
+    div.appendChild(p);
+    p.setAttribute('for', name);
+    p.textContent = label;
+
+    const input = document.createElement('select');
+    div.appendChild(input);
+    input.className = "form-control";
+    input.setAttribute('id', name);
+
+    for (const i of options) {
+        const opt = document.createElement('option');
+        input.appendChild(opt);
+        opt.value = i[0];
+        opt.textContent = i[1];
+    }
+
+    return div;
+}
+
 async function checkLogin() {
     const username = sessionStorage.getItem("username");
     if (username) {
@@ -328,8 +360,17 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
                 if (e[1].startsWith("paginate_")) {
                     continue;
                 }
-                const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
-                form.appendChild(div);
+                if (e[1].includes('_')) {
+                    const parts = e[1].split('_');
+                    const generator_proc = parts[0];
+                    const display_name = parts[1];
+                    const options = await get_drop_down_options(generator_proc);
+                    const div = form_select(make_pretty(display_name), `${proc_name}_${display_name}`, options);
+                    form.appendChild(div);
+                } else {
+                    const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
+                    form.appendChild(div);
+                }
             }
         }
     }

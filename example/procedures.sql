@@ -1,5 +1,13 @@
 DELIMITER //
 
+DROP PROCEDURE IF EXISTS createOrderType //
+CREATE PROCEDURE createOrderType (IN description VARCHAR(255), OUT newNumber INT)
+BEGIN
+    INSERT INTO ordertypes (description)
+    VALUES (description);
+    SET newNumber = LAST_INSERT_ID();
+END //
+
 DROP PROCEDURE IF EXISTS createPart //
 CREATE PROCEDURE createPart (IN description VARCHAR(255), IN price DECIMAL(10, 2), OUT partNumber INT)
 BEGIN
@@ -22,6 +30,12 @@ CREATE PROCEDURE deletePart (IN partNumber INT)
 BEGIN
     SET @partNumber = partNumber;
     DELETE FROM catalog WHERE partNumber = @partNumber;
+END //
+
+DROP PROCEDURE IF EXISTS listOrderTypes //
+CREATE PROCEDURE listOrderTypes ()
+BEGIN
+    SELECT orderType,description FROM ordertypes;
 END //
 
 DROP PROCEDURE IF EXISTS listParts //
@@ -52,7 +66,7 @@ BEGIN
 END //
 
 DROP PROCEDURE IF EXISTS createOrder //
-CREATE PROCEDURE createOrder (IN customerNumber INT, OUT orderNumber INT )
+CREATE PROCEDURE createOrder (IN customerNumber INT, IN listOrderTypes_orderType INT, OUT orderNumber INT )
 BEGIN
     INSERT INTO orders (customerNumber)
     VALUES (customerNumber);
