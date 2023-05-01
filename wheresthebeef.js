@@ -25,7 +25,6 @@ async function get_schema(proc_name) {
 
 async function get_drop_down_options(proc_name) {
     let result = await sql_exec(`CALL ${proc_name};`);
-    alert(result);
     // Get rid of the column names
     result[0].shift();
     return result[0];
@@ -365,7 +364,7 @@ async function callProcedure(proc_name, format_row = format_row_basic, initial_s
                     const generator_proc = parts[0];
                     const display_name = parts[1];
                     const options = await get_drop_down_options(generator_proc);
-                    const div = form_select(make_pretty(display_name), `${proc_name}_${display_name}`, options);
+                    const div = form_select(make_pretty(display_name), `${proc_name}_${e[1]}`, options);
                     form.appendChild(div);
                 } else {
                     const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
