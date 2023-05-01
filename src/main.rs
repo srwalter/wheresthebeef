@@ -1,6 +1,5 @@
 use std::convert::Infallible;
 use std::net::SocketAddr;
-use std::collections::HashMap;
 
 use hyper::{Body, Request, Response, Server, StatusCode};
 use hyper::service::{make_service_fn, service_fn};
@@ -83,8 +82,7 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
         let resp = match sql_request(sql) {
             Ok(resp) => resp,
             Err(err) => {
-                let mut map = HashMap::new();
-                map.insert("error", format!("{:?}", err));
+                let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
                 serde_json::to_string(&map).unwrap()
             }
         };
