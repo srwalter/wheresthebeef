@@ -14,6 +14,8 @@ async function onLoad() {
     if (q['proc']) {
         await callProcedure(q['proc']);
         prefillForms();
+    } else {
+        await allRoutines();
     }
 }
         </script>

@@ -23,6 +23,13 @@ async function get_schema(proc_name) {
     return result[0];
 }
 
+async function get_routines() {
+    let result = await sql_exec("CALL listRoutines();");
+    // Get rid of the column names
+    result[0].shift();
+    return result[0];
+}
+
 async function get_drop_down_options(proc_name) {
     let result = await sql_exec(`CALL ${proc_name};`);
     // Get rid of the column names
@@ -509,5 +516,27 @@ async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
 // making a new form.
 async function callProcedureShared(proc_name, prev_proc) {
     return callProcedure(proc_name, undefined, undefined, prev_proc);
+}
+
+// Generate a list of all available routines.  For super-lazy-mode this may be
+// all the UI you need.
+async function allRoutines() {
+    const body = document.querySelector("#wheresthebeef");
+    const ul = document.createElement("ul");
+    body.appendChild(ul);
+
+    let routines = await get_routines();
+
+    for (const r of routines) {
+        const li = document.createElement("li");
+        ul.appendChild(li);
+
+        const a = document.createElement('a');
+        li.appendChild(a);
+        a.textContent = make_pretty(r[0]);
+        a.addEventListener('click', (event) => {
+            callProcedureClear(r[0]);
+        });
+    }
 }
 

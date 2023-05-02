@@ -66,7 +66,9 @@ often reloading them into the DBMS during development.
 
 6) Create the frontend.  In the simplest case, you just need a call to
 callProcedure() for each of the stored procedures you just created.  Viola, you
-have a basic web frontend to your DB.
+have a basic web frontend to your DB.  Actually, in the simplest, simplest
+case, just copy example.html and you'll get a list of all the procedures that
+are available.
 
 7) Create whatever roles make sense for your application.  For each role, you
 just need to grant the list of procedures that role should be allowed to call.
