@@ -31,6 +31,10 @@ BEGIN
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
+    SET @sql = CONCAT('ALTER USER ''', username, '''@''%'' DEFAULT ROLE ', role, ';');
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
     SET result = "Success";
 END //
 
