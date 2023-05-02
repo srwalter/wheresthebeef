@@ -7,6 +7,10 @@ BEGIN
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
+    SET @sql = CONCAT('GRANT EXECUTE ON PROCEDURE changePassword TO ''', username, '''@''%''');
+    PREPARE stmt FROM @sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
     SET result = "Success";
 END //
 
