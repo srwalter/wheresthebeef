@@ -1,5 +1,7 @@
 What is this?
 -------------
+Ever wanted to implement a CRUD web app entirely in SQL?  Now you can!
+
 This project started from an idea:  since the DBMS already supports user
 management and role-based access control, why not take advantage of that rather
 than re-implementing it in the application layer?  And if we can take that out

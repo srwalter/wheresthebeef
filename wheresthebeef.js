@@ -13,11 +13,11 @@ function postData(url = '', data = {}) {
 function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
-    return postData('http://localhost:8080/database/', { username: username, password: password, sql: sql });
+    return postData('http://localhost:8080/database/', { database: database, username: username, password: password, sql: sql });
 }
 
 async function get_schema(proc_name) {
-    let result = await sql_exec(`SELECT PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_NAME = "${proc_name}";`);
+    let result = await sql_exec(`SELECT PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_NAME = "${proc_name}" AND SPECIFIC_SCHEMA = "${database}";`);
     // Get rid of the column names
     result[0].shift();
     return result[0];

@@ -28,13 +28,14 @@ fn mysql_to_json(x: &mysql::Value) -> serde_json::Value {
 struct SqlRequest {
     username: String,
     password: String,
+    database: String,
     sql: String,
 }
 
-fn sql_request(db: &str, req: SqlRequest) -> Result<String,mysql::Error> {
+fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
     let opts = mysql::OptsBuilder::new()
         .ip_or_hostname(Some("192.168.1.101"))
-        .db_name(Some(db))
+        .db_name(Some(req.database))
         .user(Some(req.username))
         .pass(Some(req.password));
 
@@ -72,14 +73,14 @@ fn sql_request(db: &str, req: SqlRequest) -> Result<String,mysql::Error> {
     Ok(serde_json::to_string(&all_result).unwrap())
 }
 
-async fn handle(req: Request<Body>, db: String) -> Result<Response<Body>, Infallible> {
+async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
     let mut uri = req.uri().path().to_string();
     uri.remove(0); // remove the /
     if uri.starts_with("database") {
         let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
         let body_str = String::from_utf8(body.to_vec()).unwrap();
         let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
-        let resp = match sql_request(&db, sql) {
+        let resp = match sql_request(sql) {
             Ok(resp) => resp,
             Err(err) => {
                 let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
@@ -108,10 +109,7 @@ async fn main() {
     // And a MakeService to handle each connection...
     let make_service = make_service_fn(move |_conn| async {
         Ok::<_, Infallible>(service_fn(move |req| {
-            let mut a = std::env::args();
-            let _ = a.next().unwrap();
-            let db = a.next().unwrap();
-            handle(req, db)
+            handle(req)
         }))
     });
 
