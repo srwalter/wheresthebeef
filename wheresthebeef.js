@@ -79,6 +79,7 @@ function format_row_basic(row, first) {
     return tr;
 }
 
+// TODO: allow/require next_proc to be a list
 function format_row_link(row, first, next_proc) {
     var tr = document.createElement('tr');
 
@@ -110,6 +111,23 @@ function format_row_link(row, first, next_proc) {
     }
 
     return tr;
+}
+
+function format_row_output(row, first, headers, outputs) {
+    if (!first) {
+        for (let i=0; i < row.length; i++) {
+            for (const next of outputs) {
+                var field = headers[i];
+                if (field[0] == '@') {
+                    field = field.slice(1);
+                }
+                const f = document.querySelector(next+"_"+field);
+                if (f) {
+                    f.value = row[i];
+                }
+            }
+        }
+    }
 }
 
 async function submit_form(proc_name, format_row, prev_proc) {
@@ -183,7 +201,9 @@ async function submit_form(proc_name, format_row, prev_proc) {
         var first = true;
         for (const row of result) {
             const tr = format_row(row, first, result[0]);
-            table.appendChild(tr);
+            if (tr) {
+                table.appendChild(tr);
+            }
             first = false;
         }
         results.appendChild(table);
@@ -326,6 +346,7 @@ function parseQueryString(queryString) {
 async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
+    top_div.setAttribute('id', proc_name+'_div');
 
     const body = document.querySelector("#wheresthebeef");
     if (prev_proc == undefined) {
@@ -413,8 +434,9 @@ async function callProcedureClear(proc_name, format_row = format_row_basic, init
     await callProcedure(proc_name, format_row, initial_style, prev_proc);
 }
 
-// Generate a form for calling a procedure, the results of which are pushed
-// into the form for "next_proc"
+// Generate a form for calling a procedure, the results of which are rendered
+// into a table for selection.  The selected row is then pushed into the form
+// for next_proc
 async function callProcedureChained(proc_name, next_proc) {
     await callProcedure(proc_name, (row, first) => {
         return format_row_link(row, first, next_proc);
@@ -516,6 +538,14 @@ async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
 // making a new form.
 async function callProcedureShared(proc_name, prev_proc) {
     return callProcedure(proc_name, undefined, undefined, prev_proc);
+}
+
+// Generate a form for calling a procedure, the results of which are pushed
+// into the forms for outputs
+async function callProcedureOutput(proc_name, outputs) {
+    await callProcedure(proc_name, (row, first, headers) => {
+        return format_row_output(row, first, headers, outputs);
+    });
 }
 
 // Generate a list of all available routines.  For super-lazy-mode this may be
