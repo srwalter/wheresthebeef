@@ -496,6 +496,9 @@ function values_to_query(proc_name, values, column_names) {
 // tables.  Each row will have links that will use the provided URL
 // and procedures
 async function callProcedureLinks(params) {
+    if (params.url == undefined) {
+        params.url = 'index.html';
+    }
     params.format_row = (row, first, column_names) => {
         if (first) {
             return format_row_basic(row, first);
