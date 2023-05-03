@@ -16,14 +16,14 @@ function listParts() {
 }
 async function addToOrder() {
     clearUI();
-    await callProcedureChained({proc_name: 'lookupPart', next_proc: '#addItemToOrder_partNumber'});
-    await callProcedureChained({proc_name: 'lookupOrder', next_proc: '#addItemToOrder_orderNumber'});
+    await callProcedureChained({proc_name: 'lookupPart', next_proc: 'addItemToOrder'});
+    await callProcedureChained({proc_name: 'lookupOrder', next_proc: 'addItemToOrder'});
     await callProcedure({proc_name: 'addItemToOrder'});
     await callProcedure({proc_name: 'showOrder', prev_proc: 'addItemToOrder'});
 }
 async function createOrder() {
     clearUI();
-    await callProcedureChained({proc_name: 'lookupCustomer', next_proc: '#createOrder_customerNumber'});
+    await callProcedureChained({proc_name: 'lookupCustomer', next_proc: 'createOrder'});
     await callProcedure({proc_name: 'createOrder'});
 }
 async function onLoad() {

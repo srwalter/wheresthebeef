@@ -80,11 +80,14 @@ function format_row_basic(row, first) {
 }
 
 // TODO: allow/require next_proc to be a list
-function format_row_link(row, first, next_proc) {
+function format_row_link(row, first, headers, next_proc) {
     var tr = document.createElement('tr');
 
     var first_cell = true;
-    for (const cell of row) {
+    for (let i=0; i < row.length; i++) {
+        const cell = row[i];
+        const header = headers[i];
+
         var td;
         if (first) {
             td = document.createElement('th');
@@ -98,8 +101,15 @@ function format_row_link(row, first, next_proc) {
                 td.appendChild(a);
 
                 a.addEventListener('click', (event) => {
-                    const f = document.querySelector(next_proc);
-                    f.value = cell;
+                    for (var h of headers) {
+                        if (h[0] == '@') {
+                            h = h.slice(1);
+                        }
+                        const f = document.querySelector(`#${next_proc}_${h}`);
+                        if (f) {
+                            f.value = cell;
+                        }
+                    }
                 });
 
             } else {
@@ -438,8 +448,8 @@ async function callProcedureClear(params) {
 // into a table for selection.  The selected row is then pushed into the form
 // for next_proc
 async function callProcedureChained(params) {
-    params.format_row = (row, first) => {
-        return format_row_link(row, first, params.next_proc);
+    params.format_row = (row, first, headers) => {
+        return format_row_link(row, first, headers, params.next_proc);
     };
     params.initial_style = 'none';
     await callProcedure(params);
