@@ -17,7 +17,7 @@ function sql_exec(sql) {
 }
 
 async function get_schema(proc_name) {
-    let result = await sql_exec(`SELECT PARAMETER_MODE, PARAMETER_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_NAME = "${proc_name}" AND SPECIFIC_SCHEMA = "${database}";`);
+    let result = await sql_exec(`CALL inspectProcedure("${proc_name}");`);
     // Get rid of the column names
     result[0].shift();
     return result[0];
