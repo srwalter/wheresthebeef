@@ -8,27 +8,29 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
         <script src="/wheresthebeef.js"></script>
         <script>
+database = "wheresthebeef";
+
 function listParts() {
     clearUI();
-    callProcedureEditDelete('listParts', 'index.html', 'modifyPart', 'deletePart');
+    callProcedureEditDelete({proc_name: 'listParts', url: 'index.html', edit_proc: 'modifyPart', delete_proc: 'deletePart'});
 }
 async function addToOrder() {
     clearUI();
-    await callProcedureChained('lookupPart', '#addItemToOrder_partNumber');
-    await callProcedureChained('lookupOrder', '#addItemToOrder_orderNumber');
-    await callProcedure('addItemToOrder');
-    await callProcedureShared('showOrder', 'addItemToOrder');
+    await callProcedureChained({proc_name: 'lookupPart', next_proc: '#addItemToOrder_partNumber'});
+    await callProcedureChained({proc_name: 'lookupOrder', next_proc: '#addItemToOrder_orderNumber'});
+    await callProcedure({proc_name: 'addItemToOrder'});
+    await callProcedure({proc_name: 'showOrder', prev_proc: 'addItemToOrder'});
 }
 async function createOrder() {
     clearUI();
-    await callProcedureChained('lookupCustomer', '#createOrder_customerNumber');
-    await callProcedure('createOrder');
+    await callProcedureChained({proc_name: 'lookupCustomer', next_proc: '#createOrder_customerNumber'});
+    await callProcedure({proc_name: 'createOrder'});
 }
 async function onLoad() {
     checkLogin();
     var q = parseQueryString(window.location.search);
     if (q['proc']) {
-        await callProcedure(q['proc']);
+        await callProcedure({proc_name: q['proc']});
         prefillForms();
     }
 }
@@ -44,7 +46,7 @@ async function onLoad() {
             Parts <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createPart');">Create Part</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createPart'});">Create Part</a></li>
             <li><a onclick="listParts();">List Parts</a></li>
           </ul>
         </div>
@@ -53,8 +55,8 @@ async function onLoad() {
             Customers <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createCustomer');">Create Customer</a></li>
-            <li><a onclick="callProcedureClear('lookupCustomer');">Look up Customer</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createCustomer'});">Create Customer</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'lookupCustomer'});">Look up Customer</a></li>
           </ul>
         </div>
         <div class="btn-group">
@@ -62,10 +64,10 @@ async function onLoad() {
             Orders <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createOrderType');">Create Order Type</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createOrderType'});">Create Order Type</a></li>
             <li><a onclick="createOrder();">Create Order</a></li>
             <li><a onclick="addToOrder();">Add to Order</a></li>
-            <li><a onclick="callProcedureClear('showOrder');">Show Order</a></li>
+            <li><a onclick="callProcedureClear({proc_name: 'showOrder'});">Show Order</a></li>
           </ul>
         </div>
         <div class="btn-group">
@@ -73,9 +75,9 @@ async function onLoad() {
             Users <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createUser');">New User</a></li>
-            <li><a onclick="callProcedureClear('grantRole');">Grant Role</a></li>
-            <li><a onclick="callProcedureClear('changePassword');">Change My Password</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createUser'});">New User</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'grantRole'});">Grant Role</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'changePassword'});">Change My Password</a></li>
           </ul>
         </div>
         <button class="btn btn-default" onClick="logout();location.reload();">Log Out</button>

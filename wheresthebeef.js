@@ -343,7 +343,7 @@ function parseQueryString(queryString) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as tables
-async function callProcedure(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
+async function callProcedure({proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined}) {
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
     top_div.setAttribute('id', proc_name+'_div');
@@ -429,18 +429,20 @@ function clearUI() {
 
 // Clear all previous UI elements, then generate a form for calling a
 // procedure, with the results displayed as tables
-async function callProcedureClear(proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined) {
+async function callProcedureClear(params) {
     clearUI();
-    await callProcedure(proc_name, format_row, initial_style, prev_proc);
+    await callProcedure(params);
 }
 
 // Generate a form for calling a procedure, the results of which are rendered
 // into a table for selection.  The selected row is then pushed into the form
 // for next_proc
-async function callProcedureChained(proc_name, next_proc) {
-    await callProcedure(proc_name, (row, first) => {
-        return format_row_link(row, first, next_proc);
-    }, 'none');
+async function callProcedureChained(params) {
+    params.format_row = (row, first) => {
+        return format_row_link(row, first, params.next_proc);
+    };
+    params.initial_style = 'none';
+    await callProcedure(params);
 }
 
 function activateProcedure(proc_name) {
@@ -483,8 +485,8 @@ function values_to_query(proc_name, values, column_names) {
 // Generate a form for calling a procedure, with the results displayed as
 // tables.  Each row will have links that will use the provided URL
 // and procedures
-async function callProcedureLinks(proc_name, url, links) {
-    await callProcedure(proc_name, (row, first, column_names) => {
+async function callProcedureLinks(params) {
+    params.format_row = (row, first, column_names) => {
         if (first) {
             return format_row_basic(row, first);
         }
@@ -497,14 +499,14 @@ async function callProcedureLinks(proc_name, url, links) {
             tr.appendChild(td);
         }
 
-        for (const k in links) {
+        for (const k in params.links) {
             var proc_name;
             var autosubmit = false;
-            if (Array.isArray(links[k])) {
-                proc_name = links[k][0];
-                autosubmit = links[k][1];
+            if (Array.isArray(params.links[k])) {
+                proc_name = params.links[k][0];
+                autosubmit = params.links[k][1];
             } else {
-                proc_name = links[k];
+                proc_name = params.links[k];
             }
             var q = values_to_query(proc_name, row, column_names);
             if (autosubmit) {
@@ -514,38 +516,33 @@ async function callProcedureLinks(proc_name, url, links) {
             tr.appendChild(td);
             const a = document.createElement('a')
             td.appendChild(a);
-            a.href = url + q;
+            a.href = params.url + q;
             a.textContent = k;
         }
 
         return tr;
-    });
+    };
+    await callProcedure(params);
 }
 
 // Generate a form for calling a procedure, with the results displayed as
 // tables.  Each row will have Edit/Delete links that will use the provided URL
 // and edit_proc/delete_proc, respectively.
-async function callProcedureEditDelete(proc_name, url, edit_proc, delete_proc) {
-    const links = {
-        'Edit': edit_proc,
-        'Delete': delete_proc,
+async function callProcedureEditDelete(params) {
+    params.links = {
+        'Edit': params.edit_proc,
+        'Delete': params.delete_proc,
     };
-    await callProcedureLinks(proc_name, url, links);
-}
-
-// Generate a button for calling a procedure, with the results displayed as
-// tables.  The inputs are pulled from the form for "prev_proc" rather than
-// making a new form.
-async function callProcedureShared(proc_name, prev_proc) {
-    return callProcedure(proc_name, undefined, undefined, prev_proc);
+    await callProcedureLinks(params);
 }
 
 // Generate a form for calling a procedure, the results of which are pushed
 // into the forms for outputs
-async function callProcedureOutput(proc_name, outputs) {
-    await callProcedure(proc_name, (row, first, headers) => {
-        return format_row_output(row, first, headers, outputs);
-    });
+async function callProcedureOutput(params) {
+    params.format_row = (row, first, headers) => {
+        return format_row_output(row, first, headers, params.outputs);
+    };
+    await callProcedure(params);
 }
 
 // Generate a list of all available routines.  For super-lazy-mode this may be
@@ -570,3 +567,10 @@ async function allRoutines() {
     }
 }
 
+// Hide one div and show another
+function showHideDivs(show, hide) {
+    var elem = document.querySelector(`#${show}_div`);
+    elem.style.display = 'block';
+    var elem = document.querySelector(`#${hide}_div`);
+    elem.style.display = 'none';
+}

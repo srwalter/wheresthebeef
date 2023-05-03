@@ -12,7 +12,7 @@ async function onLoad() {
     checkLogin();
     var q = parseQueryString(window.location.search);
     if (q['proc']) {
-        await callProcedure(q['proc']);
+        await callProcedure({proc_name: q['proc']});
         prefillForms();
     } else {
         await allRoutines();
@@ -30,7 +30,7 @@ async function onLoad() {
             Parts <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createPart');">Create Part</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createPart'});">Create Part</a></li>
             <li><a onclick="listParts();">List Parts</a></li>
           </ul>
         </div>
@@ -39,9 +39,9 @@ async function onLoad() {
             Users <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-            <li><a onclick="callProcedureClear('createUser');">New User</a></li>
-            <li><a onclick="callProcedureClear('grantRole');">Grant Role</a></li>
-            <li><a onclick="callProcedureClear('changePassword');">Change My Password</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'createUser'});">New User</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'grantRole'});">Grant Role</a></li>
+              <li><a onclick="callProcedureClear({proc_name: 'changePassword'});">Change My Password</a></li>
           </ul>
         </div>
         <button class="btn btn-default" onClick="logout();location.reload();">Log Out</button>
