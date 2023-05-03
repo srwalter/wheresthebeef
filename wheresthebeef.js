@@ -605,3 +605,18 @@ function addButton(proc_name, label, action = undefined) {
 
     return button;
 }
+
+// Add a button to the div for a procedure
+function addShowHideButton(proc_name, label, show) {
+    var button = document.createElement('button');
+    const p = document.querySelector(`#${proc_name}_div`);
+    p.appendChild(button);
+
+    button.textContent = label;
+    button.className = "btn btn-default";
+    button.addEventListener('click', (event) => {
+        showHideDivs(show, proc_name);
+    });
+
+    return button;
+}
