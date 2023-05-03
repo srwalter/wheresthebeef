@@ -131,7 +131,7 @@ function format_row_output(row, first, headers, outputs) {
                 if (field[0] == '@') {
                     field = field.slice(1);
                 }
-                const f = document.querySelector(next+"_"+field);
+                const f = document.querySelector(`#${next}_${field}`);
                 if (f) {
                     f.value = row[i];
                 }
