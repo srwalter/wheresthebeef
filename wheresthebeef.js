@@ -192,13 +192,11 @@ async function submit_form(proc_name, format_row, prev_proc) {
         sql += ';'
     }
 
-    var all_result = await sql_exec(sql);
-
     var results = document.querySelector(`#results_${proc_name}`);
     results.innerHTML = '';
+    var all_result = await sql_exec(sql);
 
     var total_rows = 0;
-
     for (const result of all_result) {
         if (result[0] == '@paginate_total') {
             total_rows = parseInt(result[1]);
