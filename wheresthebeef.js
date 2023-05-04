@@ -61,67 +61,6 @@ function make_pretty(inputStr) {
   return formattedStr;
 }
 
-// TODO: allow/require next_proc to be a list
-function format_row_link(row, first, headers, next_proc) {
-    var tr = document.createElement('tr');
-
-    var first_cell = true;
-    for (let i=0; i < row.length; i++) {
-        const cell = row[i];
-        const header = headers[i];
-
-        var td;
-        if (first) {
-            td = document.createElement('th');
-            td.textContent = make_pretty(cell);
-        } else {
-            td = document.createElement('td');
-            if (first_cell) {
-                var a = document.createElement('button');
-                a.className = "btn btn-default";
-                a.textContent = cell;
-                td.appendChild(a);
-
-                a.addEventListener('click', (event) => {
-                    for (var h of headers) {
-                        if (h[0] == '@') {
-                            h = h.slice(1);
-                        }
-                        const f = document.querySelector(`#${next_proc}_${h}`);
-                        if (f) {
-                            f.value = cell;
-                        }
-                    }
-                });
-
-            } else {
-                td.textContent = cell;
-            }
-        }
-        first_cell = false;
-        tr.appendChild(td);
-    }
-
-    return tr;
-}
-
-function format_row_output(row, first, headers, outputs) {
-    if (!first) {
-        for (let i=0; i < row.length; i++) {
-            for (const next of outputs) {
-                var field = headers[i];
-                if (field[0] == '@') {
-                    field = field.slice(1);
-                }
-                const f = document.querySelector(`#${next}_${field}`);
-                if (f) {
-                    f.value = row[i];
-                }
-            }
-        }
-    }
-}
-
 async function submit_form(proc_name, format_row, prev_proc) {
     var proc_info = await get_schema(proc_name);
 
@@ -476,7 +415,46 @@ async function callProcedureClear(params) {
 // for next_proc
 async function callProcedureSelectOutput(params) {
     params.format_row = (row, first, headers) => {
-        return format_row_link(row, first, headers, params.next_proc);
+        var tr = document.createElement('tr');
+
+        var first_cell = true;
+        for (let i=0; i < row.length; i++) {
+            const cell = row[i];
+            const header = headers[i];
+
+            var td;
+            if (first) {
+                td = document.createElement('th');
+                td.textContent = make_pretty(cell);
+            } else {
+                td = document.createElement('td');
+                if (first_cell) {
+                    var a = document.createElement('button');
+                    a.className = "btn btn-default";
+                    a.textContent = cell;
+                    td.appendChild(a);
+
+                    a.addEventListener('click', (event) => {
+                        for (var h of headers) {
+                            if (h[0] == '@') {
+                                h = h.slice(1);
+                            }
+                            const f = document.querySelector(`#${next_proc}_${h}`);
+                            if (f) {
+                                f.value = cell;
+                            }
+                        }
+                    });
+
+                } else {
+                    td.textContent = cell;
+                }
+            }
+            first_cell = false;
+            tr.appendChild(td);
+        }
+
+        return tr;
     };
     params.initial_style = 'none';
     await callProcedure(params);
@@ -534,7 +512,20 @@ async function callProcedureEditDelete(params) {
 // into the forms for outputs
 async function callProcedureOutput(params) {
     params.format_row = (row, first, headers) => {
-        return format_row_output(row, first, headers, params.outputs);
+        if (!first) {
+            for (let i=0; i < row.length; i++) {
+                for (const next of outputs) {
+                    var field = headers[i];
+                    if (field[0] == '@') {
+                        field = field.slice(1);
+                    }
+                    const f = document.querySelector(`#${next}_${field}`);
+                    if (f) {
+                        f.value = row[i];
+                    }
+                }
+            }
+        }
     };
     await callProcedure(params);
 }
