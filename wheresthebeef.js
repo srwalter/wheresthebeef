@@ -278,7 +278,7 @@ function get_display_name(input_settings, name) {
     }
 }
 
-function set_style_for_input(input_settings, name, form) {
+function set_style_for_element(input_settings, name, form) {
     if (input_settings && input_settings[name] && input_settings[name]['style']) {
         form.style = input_settings[name]['style'];
     }
@@ -292,6 +292,7 @@ async function callProcedure({proc_name,
                              action = undefined,
                              links = undefined,
                              input_settings = undefined,
+                             output_settings = undefined,
                              url = 'index.html'})
 {
     const top_div = document.createElement('div');
@@ -344,11 +345,11 @@ async function callProcedure({proc_name,
                     const display_name = get_display_name(input_settings, parts[1]);
                     const options = await call_procedure(generator_proc);
                     const div = form_select(display_name, `${proc_name}_${e[1]}`, options);
-                    set_style_for_input(input_settings, parts[1], div);
+                    set_style_for_element(input_settings, parts[1], div);
                     form.appendChild(div);
                 } else {
                     const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`);
-                    set_style_for_input(input_settings, e[1], div);
+                    set_style_for_element(input_settings, e[1], div);
                     form.appendChild(div);
                 }
             }
@@ -359,14 +360,18 @@ async function callProcedure({proc_name,
         format_row = (row, first, column_names) => {
             var tr = document.createElement('tr');
 
-            for (const cell of row) {
+            for (let i=0; i < row.length; i++) {
+                const cell = row[i];
+
                 var td;
                 if (first) {
                     td = document.createElement('th');
-                    td.textContent = make_pretty(cell);
+                    td.textContent = get_display_name(output_settings, cell);
+                    set_style_for_element(output_settings, cell, td);
                 } else {
                     td = document.createElement('td');
                     td.textContent = cell;
+                    set_style_for_element(output_settings, column_names[i], td);
                 }
 
                 tr.appendChild(td);
