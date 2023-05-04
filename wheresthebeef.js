@@ -538,6 +538,15 @@ async function callProcedureEditDelete(params) {
     await callProcedure(params);
 }
 
+async function callProcedureListEditDelete(object, params = {}) {
+    params.links = {
+        'Edit': 'modify' + object,
+        'Delete': 'delete' + object,
+    };
+    params.proc_name = 'list' + object;
+    await callProcedure(params);
+}
+
 // Generate a form for calling a procedure, the results of which are pushed
 // into the forms for outputs.  This just uses the first result, rather than
 // presenting the user with a choice linke callProcedureSelectOutput
