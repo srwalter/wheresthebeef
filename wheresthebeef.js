@@ -34,6 +34,8 @@ async function get_routines() {
     return await call_procedure("listRoutines");
 }
 
+// Transform a camelCase (or StudlyCase) word into a sentence with spaces and
+// uniform capitalization
 function make_pretty(inputStr) {
   if (inputStr.length === 0) {
     return inputStr;
@@ -268,13 +270,36 @@ function parseQueryString(queryString) {
     return params;
 }
 
+function get_display_name(input_settings, name) {
+    if (input_settings && input_settings[name] && input_settings[name]['display']) {
+        return input_settings[name]['display'];
+    } else {
+        return make_pretty(name);
+    }
+}
+
+function set_style_for_input(input_settings, name, form) {
+    if (input_settings && input_settings[name] && input_settings[name]['style']) {
+        form.style = input_settings[name]['style'];
+    }
+}
+
 // Generate a form for calling a procedure, with the results displayed as tables
-async function callProcedure({proc_name, format_row = undefined, initial_style = 'block', prev_proc = undefined, action = undefined, links = undefined, url = 'index.html'}) {
+async function callProcedure({proc_name,
+                             format_row = undefined,
+                             initial_style = 'block',
+                             prev_proc = undefined,
+                             action = undefined,
+                             links = undefined,
+                             input_settings = undefined,
+                             url = 'index.html'})
+{
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
     top_div.setAttribute('id', proc_name+'_div');
 
     const body = document.querySelector("#wheresthebeef");
+    // If we have a previous form to pull from, we won't generate a new one
     if (prev_proc == undefined) {
         var h = document.createElement('h3');
         body.appendChild(h);
@@ -316,12 +341,14 @@ async function callProcedure({proc_name, format_row = undefined, initial_style =
                 if (e[1].includes('_')) {
                     const parts = e[1].split('_');
                     const generator_proc = parts[0];
-                    const display_name = parts[1];
+                    const display_name = get_display_name(input_settings, parts[1]);
                     const options = await call_procedure(generator_proc);
-                    const div = form_select(make_pretty(display_name), `${proc_name}_${e[1]}`, options);
+                    const div = form_select(display_name, `${proc_name}_${e[1]}`, options);
+                    set_style_for_input(input_settings, parts[1], div);
                     form.appendChild(div);
                 } else {
-                    const div = form_input(make_pretty(e[1]), `${proc_name}_${e[1]}`);
+                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`);
+                    set_style_for_input(input_settings, e[1], div);
                     form.appendChild(div);
                 }
             }
@@ -457,6 +484,7 @@ async function callProcedureSelectOutput(params) {
     await callProcedure(params);
 }
 
+// Submit the form associated with proc_name
 function activateProcedure(proc_name) {
     var elem = document.querySelector('#' + proc_name);
     if (elem) {
@@ -506,7 +534,8 @@ async function callProcedureEditDelete(params) {
 }
 
 // Generate a form for calling a procedure, the results of which are pushed
-// into the forms for outputs
+// into the forms for outputs.  This just uses the first result, rather than
+// presenting the user with a choice linke callProcedureSelectOutput
 async function callProcedureOutput(params) {
     params.format_row = (row, first, headers) => {
         if (!first) {
@@ -572,7 +601,7 @@ function addButton(proc_name, label, action = undefined) {
     return button;
 }
 
-// Add a button to the div for a procedure
+// Add a button to the div for a procedure that hides on div and shows another.
 function addShowHideButton(proc_name, label, show) {
     var button = document.createElement('button');
     const p = document.querySelector(`#${proc_name}_div`);
