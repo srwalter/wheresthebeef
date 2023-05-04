@@ -299,7 +299,8 @@ async function callProcedure({proc_name,
                              links = undefined,
                              input_settings = undefined,
                              output_settings = undefined,
-                             clear = false;
+                             show_button = true,
+                             clear = false,
                              url = 'index.html'})
 {
     if (clear) {
@@ -423,6 +424,9 @@ async function callProcedure({proc_name,
     submit.textContent = make_pretty(proc_name);
     if (action) {
         submit.addEventListener('click', action);
+    }
+    if (!show_button) {
+        submit.style.display = 'none';
     }
 
     form.addEventListener('submit', (event) => {
