@@ -552,7 +552,11 @@ async function callProcedureListEditDelete(object, params = {}) {
         'Edit': 'modify' + object,
         'Delete': 'delete' + object,
     };
-    params.proc_name = 'list' + object;
+    if (params.list_proc) {
+        params.proc_name = params.list_proc;
+    } else {
+        params.proc_name = 'list' + object + 's';
+    }
     await callProcedure(params);
 }
 
