@@ -23,18 +23,15 @@ async function get_schema(proc_name) {
     return result[0];
 }
 
-async function get_routines() {
-    let result = await sql_exec("CALL listRoutines();");
+async function call_procedure(proc_name) {
+    let result = await sql_exec(`CALL ${proc_name};`);
     // Get rid of the column names
     result[0].shift();
     return result[0];
 }
 
-async function get_drop_down_options(proc_name) {
-    let result = await sql_exec(`CALL ${proc_name};`);
-    // Get rid of the column names
-    result[0].shift();
-    return result[0];
+async function get_routines() {
+    return await call_procedure("listRoutines");
 }
 
 function make_pretty(inputStr) {
@@ -320,7 +317,7 @@ async function callProcedure({proc_name, format_row = undefined, initial_style =
                     const parts = e[1].split('_');
                     const generator_proc = parts[0];
                     const display_name = parts[1];
-                    const options = await get_drop_down_options(generator_proc);
+                    const options = await call_procedure(generator_proc);
                     const div = form_select(make_pretty(display_name), `${proc_name}_${e[1]}`, options);
                     form.appendChild(div);
                 } else {
