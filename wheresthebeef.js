@@ -272,7 +272,7 @@ function parseQueryString(queryString) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as tables
-async function callProcedure({proc_name, format_row = undefined, initial_style = 'block', prev_proc = undefined, action = undefined, links = undefined}) {
+async function callProcedure({proc_name, format_row = undefined, initial_style = 'block', prev_proc = undefined, action = undefined, links = undefined, url = 'index.html'}) {
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
     top_div.setAttribute('id', proc_name+'_div');
@@ -366,7 +366,7 @@ async function callProcedure({proc_name, format_row = undefined, initial_style =
                     tr.appendChild(td);
                     const a = document.createElement('a')
                     td.appendChild(a);
-                    a.href = params.url + q;
+                    a.href = url + q;
                     a.textContent = k;
                 }
             }
