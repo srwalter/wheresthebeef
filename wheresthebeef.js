@@ -270,6 +270,12 @@ function parseQueryString(queryString) {
     return params;
 }
 
+// Clear all generated UI elements
+function clearUI() {
+    const body = document.querySelector("#wheresthebeef");
+    body.innerHTML = '';
+}
+
 function get_display_name(input_settings, name) {
     if (input_settings && input_settings[name] && input_settings[name]['display']) {
         return input_settings[name]['display'];
@@ -293,8 +299,13 @@ async function callProcedure({proc_name,
                              links = undefined,
                              input_settings = undefined,
                              output_settings = undefined,
+                             clear = false;
                              url = 'index.html'})
 {
+    if (clear) {
+        clearUI();
+    }
+
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
     top_div.setAttribute('id', proc_name+'_div');
@@ -426,16 +437,10 @@ async function callProcedure({proc_name,
     top_div.appendChild(results);
 }
 
-// Clear all generated UI elements
-function clearUI() {
-    const body = document.querySelector("#wheresthebeef");
-    body.innerHTML = '';
-}
-
 // Clear all previous UI elements, then generate a form for calling a
 // procedure, with the results displayed as tables
 async function callProcedureClear(params) {
-    clearUI();
+    params.clear = true;
     await callProcedure(params);
 }
 
