@@ -61,24 +61,6 @@ function make_pretty(inputStr) {
   return formattedStr;
 }
 
-function format_row_basic(row, first) {
-    var tr = document.createElement('tr');
-
-    for (const cell of row) {
-        var td;
-        if (first) {
-            td = document.createElement('th');
-            td.textContent = make_pretty(cell);
-        } else {
-            td = document.createElement('td');
-            td.textContent = cell;
-        }
-        tr.appendChild(td);
-    }
-
-    return tr;
-}
-
 // TODO: allow/require next_proc to be a list
 function format_row_link(row, first, headers, next_proc) {
     var tr = document.createElement('tr');
@@ -351,7 +333,7 @@ function parseQueryString(queryString) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as tables
-async function callProcedure({proc_name, format_row = format_row_basic, initial_style = 'block', prev_proc = undefined, action = undefined}) {
+async function callProcedure({proc_name, format_row = undefined, initial_style = 'block', prev_proc = undefined, action = undefined, links = undefined}) {
     const top_div = document.createElement('div');
     top_div.style.display = initial_style;
     top_div.setAttribute('id', proc_name+'_div');
@@ -410,6 +392,50 @@ async function callProcedure({proc_name, format_row = format_row_basic, initial_
         }
     }
 
+    if (!format_row) {
+        format_row = (row, first, column_names) => {
+            var tr = document.createElement('tr');
+
+            for (const cell of row) {
+                var td;
+                if (first) {
+                    td = document.createElement('th');
+                    td.textContent = make_pretty(cell);
+                } else {
+                    td = document.createElement('td');
+                    td.textContent = cell;
+                }
+
+                tr.appendChild(td);
+            }
+
+            if (!first && links) {
+                for (const k in links) {
+                    var proc_name;
+                    var autosubmit = false;
+                    if (Array.isArray(links[k])) {
+                        proc_name = links[k][0];
+                        autosubmit = links[k][1];
+                    } else {
+                        proc_name = links[k];
+                    }
+                    var q = values_to_query(proc_name, row, column_names);
+                    if (autosubmit) {
+                        q += "&autosubmit="+proc_name;
+                    }
+                    const td = document.createElement('td');
+                    tr.appendChild(td);
+                    const a = document.createElement('a')
+                    td.appendChild(a);
+                    a.href = params.url + q;
+                    a.textContent = k;
+                }
+            }
+
+            return tr;
+        };
+    }
+
     var submit = document.createElement('button');
     form.appendChild(submit);
     submit.className = "btn btn-default";
@@ -448,7 +474,7 @@ async function callProcedureClear(params) {
 // Generate a form for calling a procedure, the results of which are rendered
 // into a table for selection.  The selected row is then pushed into the form
 // for next_proc
-async function callProcedureChained(params) {
+async function callProcedureSelectOutput(params) {
     params.format_row = (row, first, headers) => {
         return format_row_link(row, first, headers, params.next_proc);
     };
@@ -494,52 +520,6 @@ function values_to_query(proc_name, values, column_names) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as
-// tables.  Each row will have links that will use the provided URL
-// and procedures
-async function callProcedureLinks(params) {
-    if (params.url == undefined) {
-        params.url = 'index.html';
-    }
-    params.format_row = (row, first, column_names) => {
-        if (first) {
-            return format_row_basic(row, first);
-        }
-
-        const tr = document.createElement('tr');
-
-        for (const cell of row) {
-            const td = document.createElement('td');
-            td.textContent = cell;
-            tr.appendChild(td);
-        }
-
-        for (const k in params.links) {
-            var proc_name;
-            var autosubmit = false;
-            if (Array.isArray(params.links[k])) {
-                proc_name = params.links[k][0];
-                autosubmit = params.links[k][1];
-            } else {
-                proc_name = params.links[k];
-            }
-            var q = values_to_query(proc_name, row, column_names);
-            if (autosubmit) {
-                q += "&autosubmit="+proc_name;
-            }
-            const td = document.createElement('td');
-            tr.appendChild(td);
-            const a = document.createElement('a')
-            td.appendChild(a);
-            a.href = params.url + q;
-            a.textContent = k;
-        }
-
-        return tr;
-    };
-    await callProcedure(params);
-}
-
-// Generate a form for calling a procedure, with the results displayed as
 // tables.  Each row will have Edit/Delete links that will use the provided URL
 // and edit_proc/delete_proc, respectively.
 async function callProcedureEditDelete(params) {
@@ -547,7 +527,7 @@ async function callProcedureEditDelete(params) {
         'Edit': params.edit_proc,
         'Delete': params.delete_proc,
     };
-    await callProcedureLinks(params);
+    await callProcedure(params);
 }
 
 // Generate a form for calling a procedure, the results of which are pushed
