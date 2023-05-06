@@ -91,7 +91,7 @@ async function submit_form(proc_name, format_row, prev_proc) {
                 sql += count;
             } else {
                 var elem = document.querySelector(`#${prev_proc}_${e[1]}`);
-                sql += `"${elem.value}"`;
+                sql += `'${elem.value}'`;
             }
         } else {
             have_output = true;
@@ -329,6 +329,7 @@ async function callProcedureFull({proc_name,
                              input_settings = undefined,
                              output_settings = undefined,
                              show_button = true,
+                             show_header = true,
                              clear = false,
                              url = 'index.html'})
 {
@@ -342,7 +343,7 @@ async function callProcedureFull({proc_name,
 
     const body = document.querySelector("#wheresthebeef");
     // If we have a previous form to pull from, we won't generate a new one
-    if (prev_proc == undefined) {
+    if (prev_proc == undefined && show_header) {
         var h = document.createElement('h3');
         body.appendChild(h);
 
@@ -373,6 +374,7 @@ async function callProcedureFull({proc_name,
     var proc_info = await get_schema(proc_name);
     var form = document.createElement('form');
     form.setAttribute('action', '');
+    form.setAttribute('id', proc_name+'_form');
 
     if (prev_proc == undefined) {
         for (const e of proc_info) {
@@ -539,6 +541,81 @@ async function callProcedureSelectOutput(params) {
         return tr;
     };
     params.initial_style = 'none';
+    await callProcedureFull(params);
+}
+
+// Generate a form for calling a procedure, the results of which are rendered
+// into a table for selection.  Multiple options can be selected
+async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
+    params.proc_name = proc_name;
+    params.format_row = (row, first, headers) => {
+        var tr = document.createElement('tr');
+
+        var first_cell = true;
+        for (let i=0; i < row.length; i++) {
+            const cell = row[i];
+            var header = headers[i];
+            if (header[0] == '_') {
+                header = header.slice(1);
+            }
+
+            var td;
+            if (first) {
+                if (first_cell) {
+                    const td = document.createElement('td');
+                    tr.appendChild(td);
+                }
+                td = document.createElement('th');
+                td.textContent = make_pretty(cell);
+            } else {
+                td = document.createElement('td');
+                td.setAttribute('data-wtb-column', header);
+
+                if (first_cell) {
+                    const input = document.createElement('input');
+                    tr.appendChild(input);
+                    input.type = 'checkbox';
+
+                    input.addEventListener('input', (event) => {
+                        const form = document.querySelector(`#${next_proc}_form`);
+                        const results = document.querySelector(`#results_${proc_name}`);
+                        const table = results.children[0];
+
+                        for (const e of form.elements) {
+                            const name = e.getAttribute('id');
+                            const parts = name.split('_');
+                            var items = [];
+
+                            // Skip the first header row
+                            for (let i=1; i < table.children.length; i++) {
+                                const result_row = table.children[i];
+                                const checkbox = result_row.children[0];
+                                if (!checkbox.checked) {
+                                    continue;
+                                }
+
+                                for (let j=1; j < result_row.children.length; j++) {
+                                    const result_cell = result_row.children[j];
+                                    const colname = result_cell.getAttribute('data-wtb-column');
+
+                                    if (colname == parts[1]) {
+                                        items.push(result_cell.textContent);
+                                    }
+                                }
+                            }
+
+                            e.value = JSON.stringify(items);
+                        }
+                    });
+                }
+                td.textContent = cell;
+            }
+            first_cell = false;
+            tr.appendChild(td);
+        }
+
+        return tr;
+    };
     await callProcedureFull(params);
 }
 

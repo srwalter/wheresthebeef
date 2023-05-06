@@ -178,6 +178,14 @@ The same as callProcedureOutput, except that the results are displayed so that
 the user can select a row.  The selected row has its values copied into the
 form for next_proc.
 
+    callProcedureSelectOutput(proc_name, next_proc, params={})
+
+The same as callProcedureSelectOutput, except that the results are displayed so
+that the user can select multiple rows with a checkbox.  The results are pushed
+into the form for next_proc.  Specifically, for each input in next_proc, the
+values from the columns with the same name (that are checked, of course) are
+turned into a JSON array, which is stored into the input.
+
     callProcedureEditDelete(params)
 
 The main use case for this function is with procedures that return a list of
