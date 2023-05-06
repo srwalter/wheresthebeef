@@ -521,7 +521,7 @@ async function callProcedureSelectOutput(params) {
                             if (h[0] == '@') {
                                 h = h.slice(1);
                             }
-                            const f = document.querySelector(`#${next_proc}_${h}`);
+                            const f = document.querySelector(`#${params.next_proc}_${h}`);
                             if (f) {
                                 f.value = cell;
                             }
