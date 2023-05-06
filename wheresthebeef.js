@@ -377,7 +377,7 @@ async function callProcedureFull({proc_name,
                     const generator_proc = parts[0];
                     const display_name = get_display_name(input_settings, parts[1]);
                     const options = await call_procedure(generator_proc);
-                    const div = form_select(display_name, `${proc_name}_${e[1]}`, options);
+                    const div = form_select(display_name, `${proc_name}_${parts[1]}`, options);
                     set_style_for_element(input_settings, parts[1], div);
                     form.appendChild(div);
                 } else {
@@ -533,7 +533,7 @@ function activateProcedure(proc_name) {
 function prefillForms() {
     var q = parseQueryString(window.location.search);
 
-    for (const k in q) {
+    for (var k in q) {
         var elem = document.querySelector('#' + k);
         if (elem) {
             elem.value = q[k];
