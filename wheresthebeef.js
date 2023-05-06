@@ -570,10 +570,14 @@ function prefillForms() {
 function values_to_query(proc_name, values, column_names) {
     var q = `?proc=${proc_name}`
     for (let i=0; i<values.length; i++) {
+        var col = column_names[i];
+        if (col[0] == '_') {
+            col = col.slice(1);
+        }
         q += '&'
         q += encodeURIComponent(proc_name);
         q += '_'
-        q += encodeURIComponent(column_names[i]);
+        q += encodeURIComponent(col);
         q += '='
         q += encodeURIComponent(values[i]);
     }
