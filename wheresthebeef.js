@@ -167,7 +167,7 @@ async function submit_form(proc_name, format_row, prev_proc) {
     }
 }
 
-function form_input(label, name, type="text") {
+function form_input(label, name, type="text", dbtype) {
     var div = document.createElement('div');
     div.className = "form-group";
 
@@ -180,6 +180,27 @@ function form_input(label, name, type="text") {
     input.setAttribute('id', name);
     input.setAttribute('type', type);
     div.appendChild(input);
+
+    if (dbtype == 'int') {
+        input.addEventListener('input', (event) => {
+            const regex = /^-?\d+$/;
+            if (!regex.test(input.value)) {
+                p.style.color = 'red';
+            } else {
+                p.style.color = 'black';
+            }
+        });
+    } else if (dbtype == 'float') {
+        input.addEventListener('input', (event) => {
+            const regex = /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/;
+            if (!regex.test(input.value)) {
+                p.style.color = 'red';
+            } else {
+                p.style.color = 'black';
+            }
+        });
+    }
+
     return div;
 }
 
@@ -360,7 +381,7 @@ async function callProcedureFull({proc_name,
                     set_style_for_element(input_settings, parts[1], div);
                     form.appendChild(div);
                 } else {
-                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`);
+                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, undefined, e[2]);
                     set_style_for_element(input_settings, e[1], div);
                     form.appendChild(div);
                 }
