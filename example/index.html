@@ -46,7 +46,7 @@ async function onLoad() {
             Parts <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-              <li><a onclick="callProcedureClear({proc_name: 'createPart'});">Create Part</a></li>
+              <li><a onclick="callProcedure('createPart');">Create Part</a></li>
             <li><a onclick="listParts();">List Parts</a></li>
           </ul>
         </div>
@@ -55,8 +55,8 @@ async function onLoad() {
             Customers <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-              <li><a onclick="callProcedureClear({proc_name: 'createCustomer'});">Create Customer</a></li>
-              <li><a onclick="callProcedureClear({proc_name: 'lookupCustomer'});">Look up Customer</a></li>
+              <li><a onclick="callProcedure('createCustomer');">Create Customer</a></li>
+              <li><a onclick="callProcedure('lookupCustomer');">Look up Customer</a></li>
           </ul>
         </div>
         <div class="btn-group">
@@ -64,10 +64,10 @@ async function onLoad() {
             Orders <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-              <li><a onclick="callProcedureClear({proc_name: 'createOrderType'});">Create Order Type</a></li>
+              <li><a onclick="callProcedure('createOrderType');">Create Order Type</a></li>
             <li><a onclick="createOrder();">Create Order</a></li>
             <li><a onclick="addToOrder();">Add to Order</a></li>
-            <li><a onclick="callProcedureClear({proc_name: 'showOrder'});">Show Order</a></li>
+            <li><a onclick="callProcedure('showOrder');">Show Order</a></li>
           </ul>
         </div>
         <div class="btn-group">
@@ -75,9 +75,9 @@ async function onLoad() {
             Users <span class="caret"></span>
           </button>
           <ul class="dropdown-menu">
-              <li><a onclick="callProcedureClear({proc_name: 'createUser'});">New User</a></li>
-              <li><a onclick="callProcedureClear({proc_name: 'grantRole'});">Grant Role</a></li>
-              <li><a onclick="callProcedureClear({proc_name: 'changePassword'});">Change My Password</a></li>
+              <li><a onclick="callProcedure('createUser');">New User</a></li>
+              <li><a onclick="callProcedure('grantRole');">Grant Role</a></li>
+              <li><a onclick="callProcedure('changePassword');">Change My Password</a></li>
           </ul>
         </div>
         <button class="btn btn-default" onClick="logout();location.reload();">Log Out</button>

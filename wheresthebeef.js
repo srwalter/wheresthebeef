@@ -291,7 +291,7 @@ function set_style_for_element(input_settings, name, form) {
 }
 
 // Generate a form for calling a procedure, with the results displayed as tables
-async function callProcedure({proc_name,
+async function callProcedureFull({proc_name,
                              format_row = undefined,
                              initial_style = 'block',
                              prev_proc = undefined,
@@ -441,11 +441,12 @@ async function callProcedure({proc_name,
     top_div.appendChild(results);
 }
 
-// Clear all previous UI elements, then generate a form for calling a
-// procedure, with the results displayed as tables
-async function callProcedureClear(params) {
-    params.clear = true;
-    await callProcedure(params);
+async function callProcedure(proc_name, clear = true) {
+    params = {
+        proc_name: proc_name,
+        clear: clear
+    };
+    await callProcedureFull(params);
 }
 
 // Generate a form for calling a procedure, the results of which are rendered
@@ -495,7 +496,7 @@ async function callProcedureSelectOutput(params) {
         return tr;
     };
     params.initial_style = 'none';
-    await callProcedure(params);
+    await callProcedureFull(params);
 }
 
 // Submit the form associated with proc_name
@@ -544,7 +545,7 @@ async function callProcedureEditDelete(params) {
         'Edit': params.edit_proc,
         'Delete': params.delete_proc,
     };
-    await callProcedure(params);
+    await callProcedureFull(params);
 }
 
 async function callProcedureListEditDelete(object, params = {}) {
@@ -557,7 +558,7 @@ async function callProcedureListEditDelete(object, params = {}) {
     } else {
         params.proc_name = 'list' + object + 's';
     }
-    await callProcedure(params);
+    await callProcedureFull(params);
 }
 
 // Generate a form for calling a procedure, the results of which are pushed
@@ -580,7 +581,7 @@ async function callProcedureOutput(params) {
             }
         }
     };
-    await callProcedure(params);
+    await callProcedureFull(params);
 }
 
 // Generate a list of all available routines.  For super-lazy-mode this may be
@@ -600,7 +601,7 @@ async function allRoutines() {
         li.appendChild(a);
         a.textContent = make_pretty(r[0]);
         a.addEventListener('click', (event) => {
-            callProcedureClear(r[0]);
+            callProcedure(r[0], true);
         });
     }
 }
