@@ -123,17 +123,17 @@ button that actually invokes the procedure.  The results and any output
 parameters from the function are rendered as tables.  Calls clearUI() unless
 clear is false.
 
-callProcedureFull({proc_name,
-                  format_row = undefined,
-                  initial_style = 'block',
-                  prev_proc = undefined,
-                  action = undefined,
-                  links = undefined,
-                  url = 'index.html',
-                  input_settings = undefined,
-                  output_settings = undefined,
-                  show_button = true,
-                  clear = false})
+    callProcedureFull({proc_name,
+                      format_row = undefined,
+                      initial_style = 'block',
+                      prev_proc = undefined,
+                      action = undefined,
+                      links = undefined,
+                      url = 'index.html',
+                      input_settings = undefined,
+                      output_settings = undefined,
+                      show_button = true,
+                      clear = false})
 
 The all-singing, all-dancing version of the above.  format_row is a callable
 that is invoke for each row of the returned results, for custom formatting.
