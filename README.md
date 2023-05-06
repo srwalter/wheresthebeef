@@ -102,8 +102,8 @@ Procedure Naming Considerations
   pagination_offset should probably be hidden, however pagination_count could
   be user-visible to allow selectable pages sizes.
 
-JavaScript Documentation
-------------------------
+JavaScript Function Documentation
+---------------------------------
     checkLogin()
 
 Generates a login form if there is not already a username and password in session storage.
