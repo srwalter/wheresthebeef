@@ -79,6 +79,10 @@ async function submit_form(proc_name, format_row, prev_proc) {
         first = false;
 
         if (e[0] == "IN") {
+            // Remove leading underscore, if any
+            if (e[1][0] == '_') {
+                e[1][0] = e[1][0].slice(1);
+            }
             if (e[1] == "paginate_offset") {
                 const offset = document.querySelector("#pagination_offset").value;
                 sql += offset;
@@ -305,9 +309,13 @@ function get_display_name(input_settings, name) {
     }
 }
 
-function set_style_for_element(input_settings, name, form) {
+function set_style_for_element(input_settings, name, form, hidden) {
     if (input_settings && input_settings[name] && input_settings[name]['style']) {
         form.style = input_settings[name]['style'];
+    } else {
+        if (hidden) {
+            form.style.display = 'none';
+        }
     }
 }
 
@@ -372,17 +380,25 @@ async function callProcedureFull({proc_name,
                 if (e[1].startsWith("paginate_")) {
                     continue;
                 }
+
+                // If the parameter starts with an underscore, it should be hidden by default
+                var hidden = false;
+                if (e[1][0] == '_') {
+                    e[1] = e[1].slice(1);
+                    hidden = true;
+                }
+
                 if (e[1].includes('_')) {
                     const parts = e[1].split('_');
                     const generator_proc = parts[0];
                     const display_name = get_display_name(input_settings, parts[1]);
                     const options = await call_procedure(generator_proc);
                     const div = form_select(display_name, `${proc_name}_${parts[1]}`, options);
-                    set_style_for_element(input_settings, parts[1], div);
+                    set_style_for_element(input_settings, parts[1], div, hidden);
                     form.appendChild(div);
                 } else {
                     const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, undefined, e[2]);
-                    set_style_for_element(input_settings, e[1], div);
+                    set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 }
             }
