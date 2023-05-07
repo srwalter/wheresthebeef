@@ -60,6 +60,11 @@ function make_pretty(inputStr) {
   return formattedStr;
 }
 
+// Replace an single quotes with a pair of single quotes
+function sql_escape(input) {
+    return input.replace(/'/g, "''");
+}
+
 async function submit_form(proc_name, format_row, prev_proc) {
     var proc_info = await get_schema(proc_name);
 
@@ -80,9 +85,15 @@ async function submit_form(proc_name, format_row, prev_proc) {
 
         if (e[0] == "IN") {
             // Remove leading underscore, if any
-            if (e[1][0] == '_') {
-                e[1][0] = e[1][0].slice(1);
+            var input_name = e[1];
+            if (input_name[0] == '_') {
+                input_name = input_name.slice(1);
             }
+            if (input_name.includes('_')) {
+                const parts = input_name.split('_');
+                input_name = parts[1];
+            }
+
             if (e[1] == "paginate_offset") {
                 const offset = document.querySelector("#pagination_offset").value;
                 sql += offset;
@@ -90,8 +101,8 @@ async function submit_form(proc_name, format_row, prev_proc) {
                 const count = document.querySelector("#pagination_count").value;
                 sql += count;
             } else {
-                var elem = document.querySelector(`#${prev_proc}_${e[1]}`);
-                sql += `'${elem.value}'`;
+                var elem = document.querySelector(`#${prev_proc}_${input_name}`);
+                sql += `'${sql_escape(elem.value)}'`;
             }
         } else {
             have_output = true;
