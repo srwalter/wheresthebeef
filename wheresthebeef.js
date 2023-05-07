@@ -509,8 +509,10 @@ async function callProcedure(proc_name, clear = true) {
 // Generate a form for calling a procedure, the results of which are rendered
 // into a table for selection.  The selected row is then pushed into the form
 // for next_proc
-async function callProcedureSelectOutput(params) {
+async function callProcedureSelectOutput(proc_name, next_proc, params = {}) {
     params = Object.assign({}, params);
+    params.proc_name = proc_name;
+    params.next_proc = next_proc;
     params.format_row = (row, first, headers) => {
         var tr = document.createElement('tr');
 
@@ -678,8 +680,11 @@ function values_to_query(proc_name, values, column_names) {
 // Generate a form for calling a procedure, with the results displayed as
 // tables.  Each row will have Edit/Delete links that will use the provided URL
 // and edit_proc/delete_proc, respectively.
-async function callProcedureEditDelete(params) {
+async function callProcedureEditDelete(proc_name, edit_proc, delete_proc, params = {}) {
     params = Object.assign({}, params);
+    params.proc_name = proc_name;
+    params.edit_proc = edit_proc;
+    params.delete_proc = delete_proc;
     params.links = {
         'Edit': params.edit_proc,
         'Delete': params.delete_proc,

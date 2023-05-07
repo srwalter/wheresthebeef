@@ -12,12 +12,12 @@ database = "wheresthebeef";
 
 function listParts() {
     clearUI();
-    callProcedureEditDelete({proc_name: 'listParts', url: 'index.html', edit_proc: 'modifyPart', delete_proc: 'deletePart'});
+    callProcedureEditDelete('listParts', 'modifyPart', 'deletePart');
 }
 async function addToOrder() {
     clearUI();
-    await callProcedureSelectOutput({proc_name: 'lookupPart', next_proc: 'addItemToOrder'});
-    await callProcedureSelectOutput({proc_name: 'lookupOrder', next_proc: 'addItemToOrder'});
+    await callProcedureSelectOutput('lookupPart', 'addItemToOrder');
+    await callProcedureSelectOutput('lookupOrder', 'addItemToOrder');
     await callProcedure({proc_name: 'addItemToOrder'});
     await callProcedure({proc_name: 'showOrder', prev_proc: 'addItemToOrder'});
 }
