@@ -344,6 +344,7 @@ async function callProcedureFull({proc_name,
                              clear = false,
                              url = 'index.html'})
 {
+    params = Object.assign({}, params);
     if (clear) {
         clearUI();
     }
@@ -509,6 +510,7 @@ async function callProcedure(proc_name, clear = true) {
 // into a table for selection.  The selected row is then pushed into the form
 // for next_proc
 async function callProcedureSelectOutput(params) {
+    params = Object.assign({}, params);
     params.format_row = (row, first, headers) => {
         var tr = document.createElement('tr');
 
@@ -558,6 +560,7 @@ async function callProcedureSelectOutput(params) {
 // Generate a form for calling a procedure, the results of which are rendered
 // into a table for selection.  Multiple options can be selected
 async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
+    params = Object.assign({}, params);
     params.proc_name = proc_name;
     params.format_row = (row, first, headers) => {
         var tr = document.createElement('tr');
@@ -676,6 +679,7 @@ function values_to_query(proc_name, values, column_names) {
 // tables.  Each row will have Edit/Delete links that will use the provided URL
 // and edit_proc/delete_proc, respectively.
 async function callProcedureEditDelete(params) {
+    params = Object.assign({}, params);
     params.links = {
         'Edit': params.edit_proc,
         'Delete': params.delete_proc,
@@ -684,6 +688,7 @@ async function callProcedureEditDelete(params) {
 }
 
 async function callProcedureListEditDelete(object, params = {}) {
+    params = Object.assign({}, params);
     params.links = {
         'Edit': 'modify' + object,
         'Delete': 'delete' + object,
@@ -700,6 +705,7 @@ async function callProcedureListEditDelete(object, params = {}) {
 // into the forms for outputs.  This just uses the first result, rather than
 // presenting the user with a choice linke callProcedureSelectOutput
 async function callProcedureOutput(params) {
+    params = Object.assign({}, params);
     params.format_row = (row, first, headers) => {
         if (!first) {
             for (let i=0; i < row.length; i++) {
