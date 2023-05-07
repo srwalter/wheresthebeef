@@ -778,3 +778,18 @@ function addShowHideButton(proc_name, label, show) {
 
     return button;
 }
+
+// Pull a value from src_field in the form for src_proc, and store it to
+// dest_field in the form for dest_proc
+function copyFromInput(src_proc, src_field, dest_proc, dest_field) {
+    if (src_field[0] == '_') {
+      src_field = src_field.slice(1);
+    }
+    if (dest_field[0] == '_') {
+      dest_field = dest_field.slice(1);
+    }
+
+    const src = document.querySelector(`#${src_proc}_${src_field}`);
+    const dest = document.querySelector(`#${dest_proc}_${dest_field}`);
+    dest.value = src.value;
+}
