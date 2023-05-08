@@ -714,9 +714,12 @@ async function callProcedureOutput(params) {
     params.format_row = (row, first, headers) => {
         if (!first) {
             for (let i=0; i < row.length; i++) {
-                for (const next of outputs) {
+                for (const next of params.outputs) {
                     var field = headers[i];
                     if (field[0] == '@') {
+                        field = field.slice(1);
+                    }
+                    if (field[0] == '_') {
                         field = field.slice(1);
                     }
                     const f = document.querySelector(`#${next}_${field}`);
