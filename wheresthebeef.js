@@ -230,6 +230,24 @@ function form_input(label, name, type, dbtype, dtd) {
                 p.style.color = 'black';
             }
         });
+    } else if (dbtype == 'decimal') {
+        const regex = /decimal\((\d+),(\d+)\)/;
+        const match = regex.exec(dtd);
+        if (match) {
+            const precision = parseInt(match[1], 10);
+            const scale = parseInt(match[2], 10);
+            const integerPart = precision - scale;
+            const regexPattern = `^-?\\d{1,${integerPart}}(\\.\\d{1,${scale}})?$`;
+            const regex = new RegExp(regexPattern);
+
+            input.addEventListener('input', (event) => {
+                if (!regex.test(input.value)) {
+                    p.style.color = 'red';
+                } else {
+                    p.style.color = 'black';
+                }
+            });
+        }
     } else if (dbtype == 'float') {
         input.addEventListener('input', (event) => {
             const regex = /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/;
