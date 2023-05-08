@@ -664,6 +664,10 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
 
                             e.value = JSON.stringify(items);
                         }
+
+			if (params.select_many_action) {
+                            params.select_many_action(input, event);
+			}
                     });
                 }
                 td.textContent = cell;
