@@ -102,7 +102,15 @@ async function submit_form(proc_name, format_row, prev_proc) {
                 sql += count;
             } else {
                 var elem = document.querySelector(`#${prev_proc}_${input_name}`);
-                sql += `'${sql_escape(elem.value)}'`;
+                var value = sql_escape(elem.value);
+                if (elem.getAttribute('type') == 'checkbox') {
+                    if (elem.checked) {
+                        value = 1;
+                    } else {
+                        value = 0;
+                    }
+                }
+                sql += `'${value}'`;
             }
         } else {
             have_output = true;
@@ -182,9 +190,17 @@ async function submit_form(proc_name, format_row, prev_proc) {
     }
 }
 
-function form_input(label, name, type="text", dbtype) {
+function form_input(label, name, type, dbtype, dtd) {
     var div = document.createElement('div');
     div.className = "form-group";
+
+    if (!type) {
+	if (dtd == "tinyint(1)") {
+	    type = "checkbox";
+	} else {
+	    type = "text";
+	}
+    }
 
     var p = document.createElement('label');
     p.setAttribute('for', name);
@@ -199,6 +215,15 @@ function form_input(label, name, type="text", dbtype) {
     if (dbtype == 'int') {
         input.addEventListener('input', (event) => {
             const regex = /^-?\d+$/;
+            if (!regex.test(input.value)) {
+                p.style.color = 'red';
+            } else {
+                p.style.color = 'black';
+            }
+        });
+    } else if (dbtype == 'date') {
+        input.addEventListener('input', (event) => {
+            const regex = /^\d+-\d+-\d+$/;
             if (!regex.test(input.value)) {
                 p.style.color = 'red';
             } else {
@@ -410,7 +435,7 @@ async function callProcedureFull({proc_name,
                     set_style_for_element(input_settings, parts[1], div, hidden);
                     form.appendChild(div);
                 } else {
-                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, undefined, e[2]);
+                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, undefined, e[2], e[3]);
                     set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 }
