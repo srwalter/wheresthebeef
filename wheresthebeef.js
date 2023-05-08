@@ -13,7 +13,7 @@ function postData(url = '', data = {}) {
 function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
-    return postData('http://localhost:8080/database/', { database: database, username: username, password: password, sql: sql });
+    return postData('/database/', { database: database, username: username, password: password, sql: sql });
 }
 
 async function get_schema(proc_name) {
@@ -344,7 +344,6 @@ async function callProcedureFull({proc_name,
                              clear = false,
                              url = 'index.html'})
 {
-    params = Object.assign({}, params);
     if (clear) {
         clearUI();
     }
