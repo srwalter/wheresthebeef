@@ -788,8 +788,12 @@ async function allRoutines() {
     body.appendChild(ul);
 
     let routines = await get_routines();
+    const grants = await get_grants();
 
     for (const r of routines) {
+	if (!grants.includes(r[0].toLowerCase())) {
+	    continue;
+	}
         const li = document.createElement("li");
         ul.appendChild(li);
 
@@ -853,4 +857,24 @@ function copyFromInput(src_proc, src_field, dest_proc, dest_field) {
     const src = document.querySelector(`#${src_proc}_${src_field}`);
     const dest = document.querySelector(`#${dest_proc}_${dest_field}`);
     dest.value = src.value;
+}
+
+async function get_grants() {
+    var grants = await sql_exec("SHOW GRANTS");
+    grants[0].shift();
+
+    var routines = []
+    for (const g of grants[0]) {
+        if (!g[0].startsWith('GRANT EXECUTE ON PROCEDURE')) {
+            continue;
+        }
+
+        const words = g[0].split(' ');
+        var procedure = words[4];
+        procedure = procedure.replace(/`/g, "");
+        procedure = procedure.split('.')[1];
+        routines.push(procedure);
+    }
+
+    return routines;
 }
