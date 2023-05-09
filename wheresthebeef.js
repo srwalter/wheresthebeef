@@ -289,7 +289,7 @@ function form_select(label, name, options) {
 async function checkLogin() {
     const username = sessionStorage.getItem("username");
     if (username) {
-        return;
+        return true;
     }
 
     var form = document.createElement('form');
@@ -317,6 +317,7 @@ async function checkLogin() {
 
     const body = document.querySelector("#wheresthebeef");
     body.appendChild(form);
+    return false;
 }
 
 async function logout() {
