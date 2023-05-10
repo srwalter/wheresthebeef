@@ -34,7 +34,7 @@ struct SqlRequest {
 
 fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
     let opts = mysql::OptsBuilder::new()
-        .ip_or_hostname(Some("192.168.1.101"))
+        .ip_or_hostname(Some("127.0.0.1"))
         .db_name(Some(req.database))
         .user(Some(req.username))
         .pass(Some(req.password));
