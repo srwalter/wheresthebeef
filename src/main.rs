@@ -1,14 +1,16 @@
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
-use hyper::{Body, Request, Response, Server, StatusCode};
-use hyper::service::{make_service_fn, service_fn};
+use hyper::{Body, Request, Response, StatusCode};
+use hyper::service::service_fn;
 use serde::Deserialize;
 use serde_json::value::Number;
 use mysql::prelude::*;
 
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
+
+type Error = Box<dyn std::error::Error + Send + Sync + 'static>;
 
 fn mysql_to_json(x: &mysql::Value) -> serde_json::Value {
     match x {
@@ -102,22 +104,23 @@ async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Error> {
     // Construct our SocketAddr to listen on...
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    let listener = tokio::net::TcpListener::bind(&addr).await?;
+    let mut http = hyper::server::conn::Http::new();
+    http.http1_only(true);
+    http.http1_keep_alive(true);
 
-    // And a MakeService to handle each connection...
-    let make_service = make_service_fn(move |_conn| async {
-        Ok::<_, Infallible>(service_fn(move |req| {
-            handle(req)
-        }))
-    });
-
-    // Then bind and serve...
-    let server = Server::bind(&addr).serve(make_service);
-
-    // And run forever...
-    if let Err(e) = server.await {
-        eprintln!("server error: {}", e);
+    loop {
+        let (stream, _) = listener.accept().await?;
+        let conn = http
+            .serve_connection(stream, service_fn(handle))
+            .with_upgrades();
+        tokio::spawn(async move {
+            if let Err(err) = conn.await {
+                println!("Error serving HTTP connection: {:?}", err);
+            }
+        });
     }
 }
