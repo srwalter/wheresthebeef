@@ -24,14 +24,18 @@ BEGIN
 END //
 
 DROP PROCEDURE IF EXISTS changePassword //
-CREATE PROCEDURE changePassword (IN password VARCHAR(255), OUT result VARCHAR(255))
+CREATE PROCEDURE changePassword (IN newPassword VARCHAR(255), IN passwordAgain VARCHAR(255), OUT result VARCHAR(255))
 SQL SECURITY INVOKER
 BEGIN
-    SET @sql = CONCAT('SET PASSWORD = ''', password, ''';');
-    PREPARE stmt FROM @sql;
-    EXECUTE stmt;
-    DEALLOCATE PREPARE stmt;
-    SET result = "Success";
+    IF newPassword = passwordAgain THEN
+        SET @sql = CONCAT('SET PASSWORD = ''', newPassword, ''';');
+        PREPARE stmt FROM @sql;
+        EXECUTE stmt;
+        DEALLOCATE PREPARE stmt;
+        SET result = "Success";
+    ELSE
+        SET result = "Passwords don't match";
+    END IF;
 END //
 
 DROP PROCEDURE IF EXISTS grantRole //
