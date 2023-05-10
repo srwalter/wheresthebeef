@@ -1,8 +1,13 @@
-use std::convert::Infallible;
 use std::net::SocketAddr;
+
+use futures_util::stream::StreamExt;
+use futures_util::SinkExt;
 
 use hyper::{Body, Request, Response, StatusCode};
 use hyper::service::service_fn;
+use hyper_tungstenite::{tungstenite, HyperWebsocket};
+use tungstenite::Message;
+
 use serde::Deserialize;
 use serde_json::value::Number;
 use mysql::prelude::*;
@@ -75,30 +80,68 @@ fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
     Ok(serde_json::to_string(&all_result).unwrap())
 }
 
-async fn handle(req: Request<Body>) -> Result<Response<Body>, Infallible> {
-    let mut uri = req.uri().path().to_string();
-    uri.remove(0); // remove the /
-    if uri.starts_with("database") {
-        let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
-        let body_str = String::from_utf8(body.to_vec()).unwrap();
-        let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
-        let resp = match sql_request(sql) {
-            Ok(resp) => resp,
-            Err(err) => {
-                let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
-                serde_json::to_string(&map).unwrap()
+async fn serve_websocket(ws: HyperWebsocket) -> Result<(), Error> {
+    let mut ws = ws.await?;
+
+    while let Some(msg) = ws.next().await {
+        match msg? {
+            Message::Text(msg) => {
+                let sql: SqlRequest = serde_json::from_str(&msg).unwrap();
+                let resp = match sql_request(sql) {
+                    Ok(resp) => resp,
+                    Err(err) => {
+                        let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
+                        serde_json::to_string(&map).unwrap()
+                    }
+                };
+                ws.send(Message::text(resp)).await?;
+            },
+            Message::Ping(_msg) => (),
+            Message::Close(_msg) => (),
+            e => {
+                eprintln!("Unexpected websocket message: {:?}", e);
             }
-        };
-        Ok(Response::new(Body::from(resp)))
+        }
+    }
+
+    Ok(())
+}
+
+async fn handle(mut req: Request<Body>) -> Result<Response<Body>, Error> {
+    if hyper_tungstenite::is_upgrade_request(&req) {
+        let (resp, ws) = hyper_tungstenite::upgrade(&mut req, None)?;
+        tokio::spawn(async move {
+            if let Err(e) = serve_websocket(ws).await {
+                eprintln!("Error in websocket connection: {}", e);
+            }
+        });
+
+        Ok(resp)
     } else {
-        if let Ok(file) = File::open(uri).await {
-            let body = Body::wrap_stream(FramedRead::new(file, BytesCodec::new()));
-            Ok(Response::new(body))
+        let mut uri = req.uri().path().to_string();
+        uri.remove(0); // remove the /
+        if uri.starts_with("database") {
+            let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
+            let body_str = String::from_utf8(body.to_vec()).unwrap();
+            let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
+            let resp = match sql_request(sql) {
+                Ok(resp) => resp,
+                Err(err) => {
+                    let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
+                    serde_json::to_string(&map).unwrap()
+                }
+            };
+            Ok(Response::new(Body::from(resp)))
         } else {
-            Ok(Response::builder()
-               .status(StatusCode::NOT_FOUND)
-               .body(Body::from("Not Found"))
-               .unwrap())
+            if let Ok(file) = File::open(uri).await {
+                let body = Body::wrap_stream(FramedRead::new(file, BytesCodec::new()));
+                Ok(Response::new(body))
+            } else {
+                Ok(Response::builder()
+                   .status(StatusCode::NOT_FOUND)
+                   .body(Body::from("Not Found"))
+                   .unwrap())
+            }
         }
     }
 }
