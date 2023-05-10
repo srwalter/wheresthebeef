@@ -52,6 +52,11 @@ probably shouldn't do that):
 If you do the above, then you can use the createUser and grantRole procedures
 in procedures.sql for user and role administration.
 
+NOTE: you should be sure to create all procedures using the account just
+created, particularly not root.  This is because procedures get the permissions
+of the user that defines them by default.  Therefore, creating the procedures
+as root means that they will run with excess privilege.
+
 If you name your procedures and parameters using camelCase or StudlyCaps, then
 they will be automatically converted to natural english spacing and
 capitalization.
