@@ -1,0 +1,7 @@
+#results_showRecipe > :nth-child(2) tr > :nth-child(3) {
+  width: 10%;
+}
+#results_showRecipe > :nth-child(3) tr > :nth-child(2) {
+  width: 10%;
+}
+

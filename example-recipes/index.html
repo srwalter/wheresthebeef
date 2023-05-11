@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Recipes</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" integrity="sha384-HSMxcRTRxnN+Bdg0JdbxYKrThecOKuH5zCYotlSAcp1+c8xmyTe9GYg1l9a69psu" crossorigin="anonymous">
+        <link rel="stylesheet" href="./style.css">
+        <script src="https://code.jquery.com/jquery-3.6.4.min.js" crossorigin="anonymous"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/js/bootstrap.min.js" integrity="sha384-aJ21OjlMXNL5UyIl/XNwTMqvzeRMZH2w8c5cRVpzpU8Y5bApTppSuUkhZXN0VxHd" crossorigin="anonymous"></script>
+        <script src="/wheresthebeef.js"></script>
+        <script>
+database = "recipes";
+async function onLoad() {
+    if (!await checkLogin()) {
+        return;
+    }
+    var q = parseQueryString(window.location.search);
+    if (q['proc']) {
+        if (q['proc'] == "modifyRecipe") {
+            await modifyRecipe();
+        } else {
+            await callProcedure(q['proc']);
+        }
+        prefillForms();
+    } else {
+        await listRecipes();
+    }
+}
+async function changePassword () {
+    clearUI();
+    callProcedureFull({proc_name: 'changePassword', input_settings: {
+        newPassword:   { input: 'password' },
+        passwordAgain: { input: 'password' },
+    }});
+}
+async function modifyRecipe() {
+    await callProcedure('modifyRecipe');
+    const params = {
+        prev_proc: 'modifyRecipe',
+        show_button: false,
+    }
+    // Ingredients
+    await callProcedureListEditDelete('Ingredient', params);
+    await callProcedureFull({proc_name: 'addIngredientsToRecipe', clear: false, initial_style: 'none'});
+
+    // Instructions
+    await callProcedureListEditDelete('Instruction', params);
+    await callProcedureFull({proc_name: 'insertInstructionsToRecipe', clear: false, initial_style: 'none'});
+
+    // Tags
+    params.proc_name = 'getTagsForRecipe';
+    params.links = {'Delete': 'removeTagFromRecipe'};
+    await callProcedureFull(params);
+    await callProcedureFull({proc_name: 'addTagToRecipe', clear: false, initial_style: 'none'});
+
+    prefillForms();
+    copyFromInput('modifyRecipe', 'recipeId', 'insertInstructionsToRecipe', 'recipeId');
+    copyFromInput('modifyRecipe', 'recipeId', 'addIngredientsToRecipe', 'recipeId');
+    copyFromInput('modifyRecipe', 'recipeId', 'addTagToRecipe', 'recipeId');
+    await activateProcedure('listIngredients');
+    await activateProcedure('listInstructions');
+    await activateProcedure('getTagsForRecipe');
+}
+async function addIngredientsToRecipe () {
+    clearUI();
+    await callProcedureSelectOutput('lookupRecipe', 'addIngredientsToRecipe');
+    await callProcedure('addIngredientsToRecipe', false);
+}
+async function addInstructionsToRecipe () {
+    clearUI();
+    await callProcedureSelectOutput('lookupRecipe', 'addInstructionsToRecipe');
+    await callProcedure('addInstructionsToRecipe', false);
+}
+async function deleteRecipes () {
+    clearUI();
+    await callProcedure('deleteRecipes', false);
+    await callProcedureSelectMany('listRecipes', 'deleteRecipes', {show_button: false, show_header: false});
+    activateProcedure('listRecipes');
+}
+async function listRecipes () {
+    clearUI();
+    const links = {
+        'Show': [ 'showRecipe', true ],
+        'Edit': 'modifyRecipe',
+        'Delete': 'deleteRecipe'
+    };
+    await callProcedureFull({proc_name: 'listRecipes', links: links});
+    activateProcedure('listRecipes');
+}
+async function listUnits () {
+    clearUI();
+    await callProcedureListEditDelete('Unit');
+    activateProcedure('listUnits');
+}
+async function listCategories () {
+    clearUI();
+    await callProcedureListEditDelete('Category', {list_proc: 'listCategories'});
+    activateProcedure('listCategories');
+}
+async function listTags () {
+    clearUI();
+    await callProcedureListEditDelete('Tag')
+    activateProcedure('listTags');
+}
+async function createRecipe () {
+    clearUI();
+    await callProcedureOutput({
+        proc_name: 'createRecipe',
+        outputs: ['addIngredientsToRecipe', 'addInstructionsToRecipe', 'showRecipe'],
+        action: (event) => {
+            showHideDivs('addIngredientsToRecipe', 'createRecipe');
+        }
+    });
+
+    await callProcedureFull({proc_name: 'addIngredientsToRecipe', initial_style: 'none'});
+    addShowHideButton('addIngredientsToRecipe', 'Next', 'addInstructionsToRecipe');
+
+    await callProcedureFull({proc_name: 'addInstructionsToRecipe', initial_style: 'none'});
+    var button = addShowHideButton('addInstructionsToRecipe', 'Done', 'showRecipe');
+    button.addEventListener('click', (event) => {
+        activateProcedure('showRecipe');
+    });
+
+    await callProcedureFull({proc_name: 'showRecipe', initial_style: 'none'});
+}
+async function findRecipesByTag () {
+    clearUI();
+    callProcedureFull({proc_name: 'findRecipesByTag', links: {'Show': ['showRecipe', true]}});
+}
+        </script>
+    </head>
+    <body onload="onLoad();">
+    <div class="container body-content">
+        <input type="hidden" id="pagination_offset" value="0" />
+        <input type="hidden" id="pagination_count" value="2" />
+        <h2>Recipes</h2>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Recipes <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+            <li><a onclick="listRecipes();">List Recipes</a></li>
+            <li><a onclick="findRecipesByTag();">Find Recipes by Tag</a></li>
+            <li><a onclick="createRecipe();">Create Recipe</a></li>
+            <li><a onclick="deleteRecipes();">Delete Recipes</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Categories <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+              <li><a onclick="callProcedure('createCategory');">Create Category</a></li>
+            <li><a onclick="listCategories();">List Categories</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Units <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+              <li><a onclick="callProcedure('createUnit');">Create Unit</a></li>
+            <li><a onclick="listUnits();">List Units</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Tags <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+              <li><a onclick="callProcedure('createTag');">Create Tag</a></li>
+            <li><a onclick="listTags();">List Tags</a></li>
+          </ul>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+            Users <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu">
+              <li><a onclick="callProcedure('createUser');">New User</a></li>
+              <li><a onclick="callProcedure('grantRole');">Grant Role</a></li>
+              <li><a onclick="changePassword();">Change My Password</a></li>
+          </ul>
+        </div>
+        <button class="btn btn-default" onClick="logout();location.reload();">Log Out</button>
+        <div id="wheresthebeef">
+        </div>
+    </div>
+    </body>
+</html>
