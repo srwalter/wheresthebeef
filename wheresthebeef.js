@@ -38,7 +38,7 @@ async function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
     if (!websocket) {
-        websocket = new WebsocketWrapper(`wss://${window.location.hostname}/database`);
+        websocket = new WebsocketWrapper(`wss://${window.location.hostname}:${window.location.port}/database`);
         await websocket.open();
         let payload = JSON.stringify({ database: database, username: username, password: password, sql: "SET ROLE ALL;" });
         await websocket.send(payload);
