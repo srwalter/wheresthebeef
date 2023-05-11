@@ -11,6 +11,7 @@ use tungstenite::Message;
 use serde::Deserialize;
 use serde_json::value::Number;
 use mysql::prelude::*;
+use mysql::PooledConn;
 
 use tokio::fs::File;
 use tokio_util::codec::{BytesCodec, FramedRead};
@@ -39,16 +40,19 @@ struct SqlRequest {
     sql: String,
 }
 
-fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
+fn sql_connect(req: &SqlRequest) -> Result<PooledConn, mysql::Error> {
     let opts = mysql::OptsBuilder::new()
         .ip_or_hostname(Some("127.0.0.1"))
-        .db_name(Some(req.database))
-        .user(Some(req.username))
-        .pass(Some(req.password));
+        .db_name(Some(&req.database))
+        .user(Some(&req.username))
+        .pass(Some(&req.password));
 
     let pool = mysql::Pool::new(opts)?;
-    let mut conn = pool.get_conn()?;
-    let mut result = conn.query_iter(req.sql)?;
+    pool.get_conn()
+}
+
+fn sql_request(conn: &mut PooledConn, sql: &str) -> Result<String,mysql::Error> {
+    let mut result = conn.query_iter(sql)?;
 
     let mut all_result = Vec::new();
     while let Some(cursor) = result.iter() {
@@ -83,11 +87,22 @@ fn sql_request(req: SqlRequest) -> Result<String,mysql::Error> {
 async fn serve_websocket(ws: HyperWebsocket) -> Result<(), Error> {
     let mut ws = ws.await?;
 
+    let mut conn = None;
+
     while let Some(msg) = ws.next().await {
         match msg? {
             Message::Text(msg) => {
                 let sql: SqlRequest = serde_json::from_str(&msg).unwrap();
-                let resp = match sql_request(sql) {
+                let resp = if let Some(ref mut conn) = conn {
+                    sql_request(conn, &sql.sql)
+                } else {
+                    let mut new_conn = sql_connect(&sql)?;
+                    let resp = sql_request(&mut new_conn, &sql.sql);
+                    conn = Some(new_conn);
+                    resp
+                };
+
+                let resp = match resp {
                     Ok(resp) => resp,
                     Err(err) => {
                         let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
@@ -124,7 +139,8 @@ async fn handle(mut req: Request<Body>) -> Result<Response<Body>, Error> {
             let body = hyper::body::to_bytes(req.into_body()).await.unwrap();
             let body_str = String::from_utf8(body.to_vec()).unwrap();
             let sql: SqlRequest = serde_json::from_str(&body_str).unwrap();
-            let resp = match sql_request(sql) {
+            let mut conn = sql_connect(&sql)?;
+            let resp = match sql_request(&mut conn, &sql.sql) {
                 Ok(resp) => resp,
                 Err(err) => {
                     let map = vec![vec![vec!["error".to_string()], vec![format!("{:?}", err)]]];
