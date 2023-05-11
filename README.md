@@ -77,6 +77,11 @@ are available.
 
 7) Create whatever roles make sense for your application.  For each role, you
 just need to grant the list of procedures that role should be allowed to call.
+In general you will want an "admin" role that can execute all of your
+procedures.  Be sure to assign this role to even the admin user, created above.
+This is more or less required due to a bug in MySQL:
+
+    https://bugs.mysql.com/bug.php?id=110997
 
 Features
 --------
