@@ -40,6 +40,8 @@ async function sql_exec(sql) {
     if (!websocket) {
         websocket = new WebsocketWrapper(`wss://${window.location.hostname}/database`);
         await websocket.open();
+        let payload = JSON.stringify({ database: database, username: username, password: password, sql: "SET ROLE ALL;" });
+        await websocket.send(payload);
     }
     let payload = JSON.stringify({ database: database, username: username, password: password, sql: sql });
     let result = await websocket.send(payload);
