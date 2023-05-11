@@ -1,19 +1,49 @@
-function postData(url = '', data = {}) {
-  // Default options are marked with *
-  return fetch(url, {
-    method: 'POST', // *HTTP Method type
-    headers: {
-      'Content-Type': 'application/json' // sending data in JSON format
-    },
-    body: JSON.stringify(data) // body data type must match "Content-Type" header
-  })
-  .then(response => response.json()); // parses response to JSON
+var websocket;
+
+class WebsocketWrapper {
+    constructor(url) {
+        this.socket = new WebSocket(url);
+        this.messageQueue = [];
+
+        this.socket.addEventListener('message', (event) => {
+            const resolver = this.messageQueue.shift();
+            if (resolver) {
+                resolver(event.data);
+            }
+        });
+    }
+
+    async nextMessage() {
+        return new Promise((resolve) => {
+            this.messageQueue.push(resolve);
+        });
+    }
+
+    async send(data) {
+        const promise = this.nextMessage();
+        this.socket.send(data);
+        return await promise;
+    }
+
+    async open() {
+        return new Promise((resolve) => {
+            this.socket.addEventListener('open', () => {
+                resolve();
+            });
+        });
+    }
 }
 
-function sql_exec(sql) {
+async function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
-    return postData('/database/', { database: database, username: username, password: password, sql: sql });
+    if (!websocket) {
+        websocket = new WebsocketWrapper(`wss://${window.location.hostname}/database`);
+        await websocket.open();
+    }
+    let payload = JSON.stringify({ database: database, username: username, password: password, sql: sql });
+    let result = await websocket.send(payload);
+    return JSON.parse(result);
 }
 
 async function get_schema(proc_name) {
