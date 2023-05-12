@@ -414,6 +414,21 @@ function set_style_for_element(input_settings, name, form, hidden) {
     }
 }
 
+function get_options(dtd) {
+    const regex = /enum\((.*)\)/;
+    const match = regex.exec(dtd);
+    if (match) {
+        var options = [];
+        for (const i of match[1].split(',')) {
+            const x = i.replace(/'/g, '');
+            options.push([x, x]);
+        }
+        return options;
+    } else {
+        return [];
+    }
+}
+
 // Generate a form for calling a procedure, with the results displayed as tables
 async function callProcedureFull({proc_name,
                              format_row = undefined,
@@ -492,6 +507,12 @@ async function callProcedureFull({proc_name,
                     const options = await call_procedure(generator_proc);
                     const div = form_select(display_name, `${proc_name}_${parts[1]}`, options);
                     set_style_for_element(input_settings, parts[1], div, hidden);
+                    form.appendChild(div);
+                } else if (e[2] == 'enum') {
+                    const options = get_options(e[3]);
+                    const display_name = get_display_name(input_settings, e[1]);
+                    const div = form_select(display_name, `${proc_name}_${e[1]}`, options);
+                    set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 } else {
                     const type = get_input_type(input_settings, e[1]);
