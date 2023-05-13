@@ -775,7 +775,11 @@ function prefillForms() {
     for (var k in q) {
         var elem = document.querySelector('#' + k);
         if (elem) {
-            elem.value = q[k];
+            if (elem.getAttribute('type') == 'checkbox') {
+                elem.checked = q[k];
+            } else {
+                elem.value = q[k];
+            }
         }
     }
 
