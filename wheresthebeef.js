@@ -660,7 +660,11 @@ async function callProcedureSelectOutput(proc_name, next_proc, params = {}) {
                             }
                             const f = document.querySelector(`#${params.next_proc}_${h}`);
                             if (f) {
-                                f.value = cell;
+                                if (f.getAttribute('type') == 'checkbox') {
+                                    f.checked = cell;
+                                } else {
+                                    f.value = cell;
+                                }
                             }
                         }
                     });
@@ -852,7 +856,11 @@ async function callProcedureOutput(params) {
                     }
                     const f = document.querySelector(`#${next}_${field}`);
                     if (f) {
-                        f.value = row[i];
+                        if (f.getAttribute('type') == 'checkbox') {
+                            f.checked = row[i];
+                        } else {
+                            f.value = row[i];
+                        }
                     }
                 }
             }
