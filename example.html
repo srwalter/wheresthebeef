@@ -12,7 +12,7 @@ async function onLoad() {
     checkLogin();
     var q = parseQueryString(window.location.search);
     if (q['proc']) {
-        await callProcedure({proc_name: q['proc']});
+        await callProcedure(q['proc']);
         prefillForms();
     } else {
         await allRoutines();
