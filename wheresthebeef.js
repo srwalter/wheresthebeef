@@ -144,6 +144,8 @@ async function submit_form(proc_name, format_row, prev_proc) {
                 }
                 if (e[1] != 'char' && e[1] != 'varchar' && value == '') {
                     sql += 'NULL';
+                } else if (value == 'null') {
+                    sql += 'NULL';
                 } else {
                     sql += `'${value}'`;
                 }
