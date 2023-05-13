@@ -268,8 +268,13 @@ function form_input(label, name, type, dbtype, dtd) {
         if (match) {
             const precision = parseInt(match[1], 10);
             const scale = parseInt(match[2], 10);
-            const integerPart = precision - scale;
-            const regexPattern = `^-?\\d{1,${integerPart}}(\\.\\d{1,${scale}})?$`;
+            if (scale > 0) {
+                const integerPart = precision - scale;
+                var regexPattern = `^-?\\d{1,${integerPart}}(\\.\\d{1,${scale}})?$`;
+            } else {
+                const integerPart = precision;
+                var regexPattern = `^-?\\d{1,${integerPart}}$`;
+            }
             const regex = new RegExp(regexPattern);
 
             input.addEventListener('input', (event) => {
