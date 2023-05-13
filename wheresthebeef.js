@@ -401,11 +401,15 @@ function get_display_name(input_settings, name) {
     }
 }
 
-function get_input_type(input_settings, name) {
+function get_input_type(input_settings, name, dtd) {
     if (input_settings && input_settings[name] && input_settings[name]['input']) {
         return input_settings[name]['input'];
     } else {
-        return 'text';
+	if (dtd == "tinyint(1)") {
+	    return "checkbox";
+	} else {
+	    return "text";
+	}
     }
 }
 
@@ -520,7 +524,7 @@ async function callProcedureFull({proc_name,
                     set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 } else {
-                    const type = get_input_type(input_settings, e[1]);
+                    const type = get_input_type(input_settings, e[1], e[3]);
                     const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, type, e[2], e[3]);
                     set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
