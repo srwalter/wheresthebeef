@@ -826,10 +826,15 @@ async function callProcedureEditDelete(proc_name, edit_proc, delete_proc, params
 
 async function callProcedureListEditDelete(object, params = {}) {
     params = Object.assign({}, params);
-    params.links = {
-        'Edit': 'modify' + object,
-        'Delete': 'delete' + object,
-    };
+    if (!params.links) {
+        params.links = {};
+    }
+    if (!params.links['Edit']) {
+        params.links['Edit'] = 'modify' + object;
+    }
+    if (!params.links['Delete']) {
+        params.links['Delete'] = 'delete' + object;
+    }
     if (params.list_proc) {
         params.proc_name = params.list_proc;
     } else {
