@@ -142,7 +142,11 @@ async function submit_form(proc_name, format_row, prev_proc) {
                         value = 0;
                     }
                 }
-                sql += `'${value}'`;
+                if (e[1] != 'char' && e[1] != 'varchar' && value == '') {
+                    sql += 'NULL';
+                } else {
+                    sql += `'${value}'`;
+                }
             }
         } else {
             have_output = true;
