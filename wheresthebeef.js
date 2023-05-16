@@ -456,12 +456,20 @@ async function callProcedureFull({proc_name,
                              input_settings = undefined,
                              output_settings = undefined,
                              show_button = true,
-                             show_header = true,
+                             show_header = undefined,
                              clear = false,
                              url = 'index.html'})
 {
     if (clear) {
         clearUI();
+    }
+
+    if (show_header == undefined) {
+        if (prev_proc == undefined) {
+            show_header = false;
+        } else {
+            show_header = true;
+        }
     }
 
     const top_div = document.createElement('div');
@@ -470,7 +478,7 @@ async function callProcedureFull({proc_name,
 
     const body = document.querySelector("#wheresthebeef");
     // If we have a previous form to pull from, we won't generate a new one
-    if (prev_proc == undefined && show_header) {
+    if (show_header) {
         var h = document.createElement('h3');
         body.appendChild(h);
 
