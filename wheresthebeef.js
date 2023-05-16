@@ -141,13 +141,15 @@ async function submit_form(proc_name, format_row, prev_proc) {
                     } else {
                         value = 0;
                     }
-                }
-                if (e[1] != 'char' && e[1] != 'varchar' && value == '') {
-                    sql += 'NULL';
-                } else if (value == 'null') {
-                    sql += 'NULL';
-                } else {
                     sql += `'${value}'`;
+                } else {
+                    if (e[1] != 'char' && e[1] != 'varchar' && value == '') {
+                        sql += 'NULL';
+                    } else if (value == 'null') {
+                        sql += 'NULL';
+                    } else {
+                        sql += `'${value}'`;
+                    }
                 }
             }
         } else {
