@@ -671,7 +671,7 @@ async function callProcedureSelectOutput(proc_name, next_proc, params = {}) {
                             const f = document.querySelector(`#${params.next_proc}_${h}`);
                             if (f) {
                                 if (f.getAttribute('type') == 'checkbox') {
-                                    f.checked = cell;
+                                    f.checked = cell != '0';
                                 } else {
                                     f.value = cell;
                                 }
@@ -790,7 +790,7 @@ function prefillForms() {
         var elem = document.querySelector('#' + k);
         if (elem) {
             if (elem.getAttribute('type') == 'checkbox') {
-                elem.checked = q[k];
+                elem.checked = q[k] != '0';
             } else {
                 elem.value = q[k];
             }
@@ -872,7 +872,7 @@ async function callProcedureOutput(params) {
                     const f = document.querySelector(`#${next}_${field}`);
                     if (f) {
                         if (f.getAttribute('type') == 'checkbox') {
-                            f.checked = row[i];
+                            f.checked = row[i] != '0';
                         } else {
                             f.value = row[i];
                         }
