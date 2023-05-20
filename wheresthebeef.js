@@ -422,8 +422,13 @@ function get_input_type(input_settings, name, dtd) {
 }
 
 function set_style_for_element(input_settings, name, form, hidden) {
-    if (input_settings && input_settings[name] && input_settings[name]['style']) {
-        form.style = input_settings[name]['style'];
+    if (input_settings && input_settings[name]) {
+        if (input_settings[name]['style']) {
+            form.style = input_settings[name]['style'];
+        }
+        if (input_settings[name]['class']) {
+            form.setAttribute('class', input_settings[name]['class']);
+        }
     } else {
         if (hidden) {
             form.style.display = 'none';
