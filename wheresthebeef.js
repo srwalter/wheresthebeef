@@ -457,6 +457,7 @@ async function callProcedureFull({proc_name,
                              output_settings = undefined,
                              show_button = true,
                              show_header = undefined,
+                             skip_headers = false,
                              clear = false,
                              url = 'index.html'})
 {
@@ -564,16 +565,20 @@ async function callProcedureFull({proc_name,
 
                 var td;
                 if (first) {
-                    td = document.createElement('th');
-                    td.textContent = get_display_name(output_settings, cell);
-                    set_style_for_element(output_settings, cell, td, hidden);
+                    if (!skip_headers) {
+                        td = document.createElement('th');
+                        td.textContent = get_display_name(output_settings, cell);
+                        set_style_for_element(output_settings, cell, td, hidden);
+                    }
                 } else {
                     td = document.createElement('td');
                     td.textContent = cell;
                     set_style_for_element(output_settings, column_names[i], td, hidden);
                 }
 
-                tr.appendChild(td);
+                if (td) {
+                    tr.appendChild(td);
+                }
             }
 
             if (!first && links) {
