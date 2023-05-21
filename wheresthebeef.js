@@ -463,6 +463,7 @@ async function callProcedureFull({proc_name,
                              show_button = true,
                              show_header = undefined,
                              skip_headers = false,
+                             activate = false,
                              clear = false,
                              url = 'index.html'})
 {
@@ -636,6 +637,10 @@ async function callProcedureFull({proc_name,
     var results = document.createElement('div');
     results.setAttribute('id', `results_${proc_name}`);
     top_div.appendChild(results);
+
+    if (activate) {
+        activateProcedure(proc_name);
+    }
 }
 
 async function callProcedure(proc_name, clear = true) {
