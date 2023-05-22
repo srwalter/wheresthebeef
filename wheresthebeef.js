@@ -187,17 +187,25 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
         }
 
         var table = document.createElement('table');
+        results.appendChild(table);
         table.className = "table";
 
         var first = true;
         for (const row of result) {
             const tr = format_row(row, first, result[0]);
-            if (tr) {
-                table.appendChild(tr);
+            if (first) {
+                const thead = document.createElement('thead');
+                table.appendChild(thead);
+                var tbody = document.createElement('tbody');
+                table.appendChild(tbody);
+                if (tr) {
+                    thead.appendChild(tr);
+                }
+            } else if (tr) {
+                tbody.appendChild(tr);
             }
             first = false;
         }
-        results.appendChild(table);
     }
 
     // Add pagination controls
@@ -757,8 +765,8 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
                             var items = [];
 
                             // Skip the first header row
-                            for (let i=1; i < table.children.length; i++) {
-                                const result_row = table.children[i];
+                            const rows = table.querySelectorAll("tr");
+                            for (const result_row of rows) {
                                 const checkbox = result_row.children[0];
                                 if (!checkbox.checked) {
                                     continue;
