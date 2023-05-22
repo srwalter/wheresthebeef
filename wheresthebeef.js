@@ -97,7 +97,7 @@ function sql_escape(input) {
     return input.replace(/'/g, "''");
 }
 
-async function submit_form(proc_name, format_row, prev_proc) {
+async function submit_form(proc_name, format_row, prev_proc, after_results) {
     var proc_info = await get_schema(proc_name);
 
     var sql = `CALL ${proc_name}(`;
@@ -224,9 +224,13 @@ async function submit_form(proc_name, format_row, prev_proc) {
             a.textContent = i+1;
             a.addEventListener('click', (event) => {
                 document.querySelector("#pagination_offset").value = i * count;
-                submit_form(proc_name, format_row, prev_proc);
+                submit_form(proc_name, format_row, prev_proc, after_results);
             });
         }
+    }
+
+    if (after_results) {
+        after_results();
     }
 }
 
@@ -464,6 +468,7 @@ async function callProcedureFull({proc_name,
                              show_header = undefined,
                              skip_headers = false,
                              activate = false,
+                             after_results = undefined,
                              clear = false,
                              url = 'index.html'})
 {
@@ -629,7 +634,7 @@ async function callProcedureFull({proc_name,
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        submit_form(proc_name, format_row, prev_proc);
+        submit_form(proc_name, format_row, prev_proc, after_results);
     });
 
     top_div.appendChild(form);
