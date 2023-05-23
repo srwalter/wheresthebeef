@@ -187,8 +187,11 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
         }
 
         var table = document.createElement('table');
-        results.appendChild(table);
         table.className = "table";
+
+        if (result.length > 0) {
+            results.appendChild(table);
+        }
 
         var first = true;
         for (const row of result) {
@@ -499,7 +502,7 @@ async function callProcedureFull({proc_name,
     const body = document.querySelector("#wheresthebeef");
     // If we have a previous form to pull from, we won't generate a new one
     if (show_header) {
-        var h = document.createElement('h3');
+        var h = document.createElement('h4');
         body.appendChild(h);
 
         const span = document.createElement('span');
