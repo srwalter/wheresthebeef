@@ -733,8 +733,14 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
         for (let i=0; i < row.length; i++) {
             const cell = row[i];
             var header = headers[i];
+            if (header[0] == '@') {
+                header = header.slice(1);
+            }
+
+            var hidden = false;
             if (header[0] == '_') {
                 header = header.slice(1);
+                hidden = true;
             }
 
             var td;
@@ -745,6 +751,7 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
                 }
                 td = document.createElement('th');
                 td.textContent = make_pretty(cell);
+                set_style_for_element({}, cell, td, hidden);
             } else {
                 td = document.createElement('td');
                 td.setAttribute('data-wtb-column', header);
@@ -791,6 +798,7 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
                     });
                 }
                 td.textContent = cell;
+                set_style_for_element({}, cell, td, hidden);
             }
             first_cell = false;
             tr.appendChild(td);
