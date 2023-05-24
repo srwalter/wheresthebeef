@@ -729,6 +729,7 @@ async function callProcedureSelectOutput(proc_name, next_proc, params = {}) {
 async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
     params = Object.assign({}, params);
     params.proc_name = proc_name;
+
     params.format_row = (row, first, headers) => {
         var tr = document.createElement('tr');
 
@@ -763,6 +764,7 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
                     const input = document.createElement('input');
                     tr.appendChild(input);
                     input.type = 'checkbox';
+                    input.setAttribute('class', 'wtb-select-many-checkbox');
 
                     input.addEventListener('input', (event) => {
                         const form = document.querySelector(`#${next_proc}_form`);
@@ -810,6 +812,17 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
         return tr;
     };
     await callProcedureFull(params);
+
+    const div = document.querySelector(`#${proc_name}_div`);
+    var a = document.createElement('a');
+    div.appendChild(a);
+    a.textContent = 'Toggle All';
+    a.addEventListener('click', (event) => {
+        const boxes = document.querySelectorAll(`#${proc_name}_div .wtb-select-many-checkbox`);
+        for (const b of boxes) {
+            b.click();
+        }
+    });
 }
 
 // Submit the form associated with proc_name
