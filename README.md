@@ -39,15 +39,15 @@ Getting Started
 
 2) Create a user to be the administrator:
 
-    MySQL [(none)]> CREATE USER 'bob'@'%' IDENTIFIED BY 'password';
-    MySQL [(none)]> GRANT ALL PRIVILEGES ON foo.* TO 'bob'@'%';
+    MySQL [(none)]> CREATE USER 'bob'@'localhost' IDENTIFIED BY 'password';
+    MySQL [(none)]> GRANT ALL PRIVILEGES ON foo.* TO 'bob'@'localhost';
 
 3) If you want to do user and role administration within your app, you will
 have to grant some global priviliges to the administrator user.  Keep this in
 mind if you're going to host multiple databases on the same server (i.e., you
 probably shouldn't do that):
 
-    MySQL [(none)]> GRANT CREATE USER, GRANT OPTION, ROLE_ADMIN ON *.* TO 'bob'@'%';
+    MySQL [(none)]> GRANT CREATE USER, GRANT OPTION, ROLE_ADMIN ON *.* TO 'bob'@'localhost';
 
 If you do the above, then you can use the createUser and grantRole procedures
 in procedures.sql for user and role administration.
