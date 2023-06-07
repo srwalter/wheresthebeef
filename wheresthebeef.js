@@ -346,6 +346,23 @@ function form_select(label, name, options) {
     return div;
 }
 
+function form_textarea(label, name) {
+    const div = document.createElement('div');
+    div.className = "form-group";
+
+    const p = document.createElement('label');
+    div.appendChild(p);
+    p.setAttribute('for', name);
+    p.textContent = label;
+
+    const input = document.createElement('textarea');
+    div.appendChild(input);
+    input.className = "form-control";
+    input.setAttribute('id', name);
+
+    return div;
+}
+
 async function checkLogin() {
     const username = sessionStorage.getItem("username");
     if (username) {
@@ -560,6 +577,11 @@ async function callProcedureFull({proc_name,
                     const options = get_options(e[3]);
                     const display_name = get_display_name(input_settings, e[1]);
                     const div = form_select(display_name, `${proc_name}_${e[1]}`, options);
+                    set_style_for_element(input_settings, e[1], div, hidden);
+                    form.appendChild(div);
+                } else if (e[2] == 'text') {
+                    const display_name = get_display_name(input_settings, e[1]);
+                    const div = form_textarea(display_name, `${proc_name}_${e[1]}`);
                     set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 } else {
