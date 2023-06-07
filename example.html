@@ -9,7 +9,9 @@
         <script src="/wheresthebeef.js"></script>
         <script>
 async function onLoad() {
-    checkLogin();
+    if (!await checkLogin()) {
+        return;
+    }
     var q = parseQueryString(window.location.search);
     if (q['proc']) {
         await callProcedure(q['proc']);
