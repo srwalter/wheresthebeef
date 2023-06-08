@@ -659,6 +659,7 @@ function format_cell(tr, cell, skip_headers, output_settings, first, column_name
         }
     } else {
         td = document.createElement('td');
+        td.setAttribute('data-wtb-column', column_name);
         td.textContent = cell;
         set_style_for_element(output_settings, column_name, td, hidden);
     }
