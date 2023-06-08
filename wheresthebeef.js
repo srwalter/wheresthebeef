@@ -630,28 +630,7 @@ async function callProcedureFull({proc_name,
                 }
             }
 
-            if (!first && links) {
-                for (const k in links) {
-                    var proc_name;
-                    var autosubmit = false;
-                    if (Array.isArray(links[k])) {
-                        proc_name = links[k][0];
-                        autosubmit = links[k][1];
-                    } else {
-                        proc_name = links[k];
-                    }
-                    var q = values_to_query(proc_name, row, column_names);
-                    if (autosubmit) {
-                        q += "&autosubmit="+proc_name;
-                    }
-                    const td = document.createElement('td');
-                    tr.appendChild(td);
-                    const a = document.createElement('a')
-                    td.appendChild(a);
-                    a.href = url + q;
-                    a.textContent = k;
-                }
-            }
+            format_links(tr, url, links, row, first, column_names);
 
             return tr;
         };
@@ -683,6 +662,31 @@ async function callProcedureFull({proc_name,
 
     if (activate) {
         activateProcedure(proc_name);
+    }
+}
+
+function format_links(tr, url, links, row, first, column_names) {
+    if (!first && links) {
+        for (const k in links) {
+            var proc_name;
+            var autosubmit = false;
+            if (Array.isArray(links[k])) {
+                proc_name = links[k][0];
+                autosubmit = links[k][1];
+            } else {
+                proc_name = links[k];
+            }
+            var q = values_to_query(proc_name, row, column_names);
+            if (autosubmit) {
+                q += "&autosubmit="+proc_name;
+            }
+            const td = document.createElement('td');
+            tr.appendChild(td);
+            const a = document.createElement('a')
+            td.appendChild(a);
+            a.href = url + q;
+            a.textContent = k;
+        }
     }
 }
 
