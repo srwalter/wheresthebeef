@@ -605,29 +605,7 @@ async function callProcedureFull({proc_name,
 
             for (let i=0; i < row.length; i++) {
                 const cell = row[i];
-
-                // If the column name starts with an underscore, it should be hidden by default
-                var hidden = false;
-                if (column_names[i][0] == '_') {
-                    hidden = true;
-                }
-
-                var td;
-                if (first) {
-                    if (!skip_headers) {
-                        td = document.createElement('th');
-                        td.textContent = get_display_name(output_settings, cell);
-                        set_style_for_element(output_settings, cell, td, hidden);
-                    }
-                } else {
-                    td = document.createElement('td');
-                    td.textContent = cell;
-                    set_style_for_element(output_settings, column_names[i], td, hidden);
-                }
-
-                if (td) {
-                    tr.appendChild(td);
-                }
+                format_cell(tr, cell, skip_headers, output_settings, first, column_names[i]);
             }
 
             format_links(tr, url, links, row, first, column_names);
@@ -662,6 +640,31 @@ async function callProcedureFull({proc_name,
 
     if (activate) {
         activateProcedure(proc_name);
+    }
+}
+
+function format_cell(tr, cell, skip_headers, output_settings, first, column_name) {
+    // If the column name starts with an underscore, it should be hidden by default
+    var hidden = false;
+    if (column_name[0] == '_') {
+        hidden = true;
+    }
+
+    var td;
+    if (first) {
+        if (!skip_headers) {
+            td = document.createElement('th');
+            td.textContent = get_display_name(output_settings, cell);
+            set_style_for_element(output_settings, cell, td, hidden);
+        }
+    } else {
+        td = document.createElement('td');
+        td.textContent = cell;
+        set_style_for_element(output_settings, column_name, td, hidden);
+    }
+
+    if (td) {
+        tr.appendChild(td);
     }
 }
 
