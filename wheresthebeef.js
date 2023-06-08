@@ -4,12 +4,17 @@ class WebsocketWrapper {
     constructor(url) {
         this.socket = new WebSocket(url);
         this.messageQueue = [];
+        this.closed = false;
 
         this.socket.addEventListener('message', (event) => {
             const resolver = this.messageQueue.shift();
             if (resolver) {
                 resolver(event.data);
             }
+        });
+        this.socket.addEventListener('close', (event) => {
+            alert('closed');
+            this.closed = true;
         });
     }
 
@@ -37,7 +42,7 @@ class WebsocketWrapper {
 async function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
-    if (!websocket) {
+    if (!websocket || websocket.closed == true) {
         websocket = new WebsocketWrapper(`wss://${window.location.hostname}:${window.location.port}/database`);
         await websocket.open();
         let payload = JSON.stringify({ database: database, username: username, password: password, sql: "SET ROLE ALL;" });
