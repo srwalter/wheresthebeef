@@ -685,6 +685,7 @@ function format_links(tr, url, links, row, first, column_names) {
                 q += "&autosubmit="+proc_name;
             }
             const td = document.createElement('td');
+            td.setAttribute("class", "wtb-link");
             tr.appendChild(td);
             const a = document.createElement('a')
             td.appendChild(a);
