@@ -438,6 +438,14 @@ function clearUI() {
     body.innerHTML = '';
 }
 
+function get_trusted_content(input_settings, name) {
+    if (input_settings && input_settings[name] && input_settings[name]['trusted_content']) {
+        return input_settings[name]['trusted_content'];
+    } else {
+        return false;
+    }
+}
+
 function get_display_name(input_settings, name) {
     if (input_settings && input_settings[name] && input_settings[name]['display']) {
         return input_settings[name]['display'];
@@ -660,7 +668,11 @@ function format_cell(tr, cell, skip_headers, output_settings, first, column_name
     } else {
         td = document.createElement('td');
         td.setAttribute('data-wtb-column', column_name);
-        td.textContent = cell;
+        if (get_trusted_content(output_settings, column_name)) {
+            td.innerHTML = cell;
+        } else {
+            td.textContent = cell;
+        }
         set_style_for_element(output_settings, column_name, td, hidden);
     }
 
