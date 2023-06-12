@@ -39,6 +39,10 @@ class WebsocketWrapper {
     }
 }
 
+function wtb_query(proc_name, elem_name, p=document) {
+    return p.querySelector(`#${proc_name}_${elem_name}`);
+}
+
 async function sql_exec(sql) {
     const username = sessionStorage.getItem("username");
     const password = sessionStorage.getItem("password");
@@ -138,7 +142,7 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
                 const count = document.querySelector("#pagination_count").value;
                 sql += count;
             } else {
-                var elem = document.querySelector(`#${prev_proc}_${input_name}`);
+                var elem = wtb_query(prev_proc, input_name);
                 var value = sql_escape(elem.value);
                 if (elem.getAttribute('type') == 'checkbox') {
                     if (elem.checked) {
@@ -180,7 +184,7 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
         sql += ';'
     }
 
-    var results = document.querySelector(`#results_${proc_name}`);
+    var results = wtb_query('results', proc_name);
     results.innerHTML = '';
     var all_result = await sql_exec(sql);
 
@@ -747,7 +751,7 @@ async function callProcedureSelectOutput(proc_name, next_proc, params = {}) {
                             if (h[0] == '@') {
                                 h = h.slice(1);
                             }
-                            const f = document.querySelector(`#${params.next_proc}_${h}`);
+                            const f = wtb_query(params.next_proc, h);
                             if (f) {
                                 if (f.getAttribute('type') == 'checkbox') {
                                     f.checked = cell != '0';
@@ -815,8 +819,8 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
                     input.setAttribute('class', 'wtb-select-many-checkbox');
 
                     input.addEventListener('input', (event) => {
-                        const form = document.querySelector(`#${next_proc}_form`);
-                        const results = document.querySelector(`#results_${proc_name}`);
+                        const form = wtb_query(next_proc, 'form');
+                        const results = wtb_query('results', proc_name);
                         const table = results.children[0];
 
                         for (const e of form.elements) {
@@ -861,7 +865,7 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
     };
     await callProcedureFull(params);
 
-    const div = document.querySelector(`#${proc_name}_div`);
+    const div = wtb_query(proc_name, 'div');
     var a = document.createElement('a');
     div.appendChild(a);
     a.textContent = 'Toggle All';
@@ -969,7 +973,7 @@ async function callProcedureOutput(params) {
                     if (field[0] == '_') {
                         field = field.slice(1);
                     }
-                    const f = document.querySelector(`#${next}_${field}`);
+                    const f = wtb_query(next, field);
                     if (f) {
                         if (f.getAttribute('type') == 'checkbox') {
                             f.checked = row[i] != '0';
@@ -1058,8 +1062,8 @@ function copyFromInput(src_proc, src_field, dest_proc, dest_field) {
       dest_field = dest_field.slice(1);
     }
 
-    const src = document.querySelector(`#${src_proc}_${src_field}`);
-    const dest = document.querySelector(`#${dest_proc}_${dest_field}`);
+    const src = wtb_query(src_proc, src_field);
+    const dest = wtb_query(dest_proc, dest_field);
     dest.value = src.value;
 }
 
