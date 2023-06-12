@@ -13,7 +13,6 @@ class WebsocketWrapper {
             }
         });
         this.socket.addEventListener('close', (event) => {
-            alert('closed');
             this.closed = true;
         });
     }
