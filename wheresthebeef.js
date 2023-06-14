@@ -648,9 +648,12 @@ async function callProcedureFull({proc_name,
         submit.style.display = 'none';
     }
 
+    form.submit_form = async () => {
+        await submit_form(proc_name, format_row, prev_proc, after_results);
+    };
     form.addEventListener('submit', (event) => {
         event.preventDefault();
-        submit_form(proc_name, format_row, prev_proc, after_results);
+        form.submit_form();
     });
 
     top_div.appendChild(form);
@@ -660,7 +663,7 @@ async function callProcedureFull({proc_name,
     top_div.appendChild(results);
 
     if (activate) {
-        activateProcedure(proc_name);
+        await activateProcedure(proc_name);
     }
 }
 
@@ -887,16 +890,16 @@ async function callProcedureSelectMany(proc_name, next_proc, params = {}) {
 }
 
 // Submit the form associated with proc_name
-function activateProcedure(proc_name) {
-    var elem = document.querySelector('#' + proc_name);
-    if (elem) {
-        elem.click();
+async function activateProcedure(proc_name) {
+    const form = wtb_query(proc_name, 'form');
+    if (form) {
+        await form.submit_form();
     }
 }
 
 // Parse key/value pairs from the query string, and use those to prefill any
 // form elements that match.  This is useful for e.g. modify/update operations.
-function prefillForms() {
+async function prefillForms() {
     var q = parseQueryString(window.location.search);
 
     for (var k in q) {
@@ -911,7 +914,7 @@ function prefillForms() {
     }
 
     if (q['autosubmit']) {
-        activateProcedure(q['autosubmit']);
+        await activateProcedure(q['autosubmit']);
     }
 }
 
