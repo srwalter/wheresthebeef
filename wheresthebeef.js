@@ -57,9 +57,18 @@ async function sql_exec(sql) {
 }
 
 async function get_schema(proc_name) {
+    let cache = JSON.parse(sessionStorage.getItem("schema_cache"));
+    if (cache && cache[proc_name]) {
+        return cache[proc_name];
+    }
+    if (!cache) {
+        cache = {};
+    }
     let result = await sql_exec(`CALL inspectProcedure("${proc_name}");`);
     // Get rid of the column names
     result[0].shift();
+    cache[proc_name] = result[0];
+    sessionStorage.setItem("schema_cache", JSON.stringify(cache));
     return result[0];
 }
 
