@@ -294,7 +294,7 @@ function form_input(label, name, type, dbtype, dtd) {
             }
         });
     } else if (dbtype == 'date') {
-        $(input).datepicker();
+        $(input).datepicker({dateFormat: "yy-mm-dd"});
         input.addEventListener('input', (event) => {
             const regex = /^\d+-\d+-\d+$/;
             if (!regex.test(input.value)) {
