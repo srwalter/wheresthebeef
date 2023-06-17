@@ -39,7 +39,7 @@ BEGIN
 END //
 
 DROP PROCEDURE IF EXISTS grantRole //
-CREATE PROCEDURE grantRole (IN username VARCHAR(255), IN role VARCHAR(255), OUT result VARCHAR(255))
+CREATE PROCEDURE grantRole (IN username VARCHAR(255), IN listRoles_role VARCHAR(255), OUT result VARCHAR(255))
 SQL SECURITY INVOKER
 BEGIN
     SET @sql = CONCAT('GRANT ', role, ' TO ''', username, '''@''localhost''');
