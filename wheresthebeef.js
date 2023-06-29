@@ -641,15 +641,15 @@ async function callProcedureFull({proc_name,
     submit.setAttribute('id', proc_name);
     submit.setAttribute('type', 'submit');
     submit.textContent = make_pretty(proc_name);
-    if (action) {
-        submit.addEventListener('click', action);
-    }
     if (!show_button) {
         submit.style.display = 'none';
     }
 
     form.submit_form = async () => {
         await submit_form(proc_name, format_row, prev_proc, after_results);
+        if (action) {
+            action();
+        }
     };
     form.addEventListener('submit', (event) => {
         event.preventDefault();
