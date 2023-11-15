@@ -120,6 +120,7 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
     var sql = `CALL ${proc_name}(`;
 
     var first = true;
+    var focus = true;
     var have_output = false;
 
     if (prev_proc == undefined) {
@@ -135,7 +136,9 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
         if (e[0] == "IN") {
             // Remove leading underscore, if any
             var input_name = e[1];
+            var hidden = false;
             if (input_name[0] == '_') {
+                hidden = true;
                 input_name = input_name.slice(1);
             }
             if (input_name.includes('_')) {
@@ -160,6 +163,10 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
                     }
                     sql += `'${value}'`;
                 } else {
+                    if (focus && !hidden) {
+                        elem.focus();
+                        focus = false;
+                    }
                     if (e[1] != 'char' && e[1] != 'varchar' && value == '') {
                         sql += 'NULL';
                     } else if (value == 'null') {
