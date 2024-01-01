@@ -269,7 +269,7 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
     }
 }
 
-function form_input(label, name, type, dbtype, dtd) {
+function form_input(label, name, type, dbtype, dtd, focus) {
     var div = document.createElement('div');
     div.className = "form-group";
 
@@ -289,6 +289,9 @@ function form_input(label, name, type, dbtype, dtd) {
     input.className = "form-control";
     input.setAttribute('id', name);
     input.setAttribute('type', type);
+    if (focus) {
+        input.setAttribute('autofocus', 'true');
+    }
     div.appendChild(input);
 
     if (dbtype == 'int') {
@@ -585,6 +588,7 @@ async function callProcedureFull({proc_name,
     form.setAttribute('id', proc_name+'_form');
 
     if (prev_proc == undefined) {
+        var first = true;
         for (const e of proc_info) {
             if (e[0] == "IN") {
                 if (e[1].startsWith("paginate_")) {
@@ -619,7 +623,13 @@ async function callProcedureFull({proc_name,
                     form.appendChild(div);
                 } else {
                     const type = get_input_type(input_settings, e[1], e[3]);
-                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, type, e[2], e[3]);
+                    if (first && !hidden) {
+                        first = false;
+                        focus = true;
+                    } else {
+                        focus = false;
+                    }
+                    const div = form_input(get_display_name(input_settings, e[1]), `${proc_name}_${e[1]}`, type, e[2], e[3], focus);
                     set_style_for_element(input_settings, e[1], div, hidden);
                     form.appendChild(div);
                 }
