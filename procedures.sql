@@ -42,11 +42,11 @@ DROP PROCEDURE IF EXISTS grantRole //
 CREATE PROCEDURE grantRole (IN username VARCHAR(255), IN listRoles_role VARCHAR(255), OUT result VARCHAR(255))
 SQL SECURITY INVOKER
 BEGIN
-    SET @sql = CONCAT('GRANT ', role, ' TO ''', username, '''@''localhost''');
+    SET @sql = CONCAT('GRANT ', listRoles_role, ' TO ''', username, '''@''localhost''');
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
 
-    SET @sql = CONCAT('ALTER USER ''', username, '''@''localhost'' DEFAULT ROLE ', role, ';');
+    SET @sql = CONCAT('ALTER USER ''', username, '''@''localhost'' DEFAULT ROLE ', listRoles_role, ';');
     PREPARE stmt FROM @sql;
     EXECUTE stmt;
     DEALLOCATE PREPARE stmt;
