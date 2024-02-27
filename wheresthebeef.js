@@ -295,6 +295,7 @@ function form_input(label, name, type, dbtype, dtd, focus) {
     div.appendChild(input);
 
     if (dbtype == 'int') {
+        input.setAttribute('inputmode', 'numeric');
         input.addEventListener('input', (event) => {
             const regex = /^-?\d+$/;
             if (!regex.test(input.value)) {
@@ -314,6 +315,7 @@ function form_input(label, name, type, dbtype, dtd, focus) {
             }
         });
     } else if (dbtype == 'decimal') {
+        input.setAttribute('inputmode', 'decimal');
         const regex = /decimal\((\d+),(\d+)\)/;
         const match = regex.exec(dtd);
         if (match) {
@@ -337,6 +339,7 @@ function form_input(label, name, type, dbtype, dtd, focus) {
             });
         }
     } else if (dbtype == 'float') {
+        input.setAttribute('inputmode', 'decimal');
         input.addEventListener('input', (event) => {
             const regex = /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/;
             if (!regex.test(input.value)) {
