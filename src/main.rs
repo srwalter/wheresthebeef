@@ -96,10 +96,16 @@ async fn serve_websocket(ws: HyperWebsocket) -> Result<(), Error> {
                 let resp = if let Some(ref mut conn) = conn {
                     sql_request(conn, &sql.sql)
                 } else {
-                    let mut new_conn = sql_connect(&sql)?;
-                    let resp = sql_request(&mut new_conn, &sql.sql);
-                    conn = Some(new_conn);
-                    resp
+                    match sql_connect(&sql) {
+                        Ok(mut new_conn) => {
+                            let resp = sql_request(&mut new_conn, &sql.sql);
+                            conn = Some(new_conn);
+                            resp
+                        }
+                        Err(e) => {
+                            Err(e)
+                        }
+                    }
                 };
 
                 let resp = match resp {
