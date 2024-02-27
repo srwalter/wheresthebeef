@@ -219,6 +219,12 @@ async function submit_form(proc_name, format_row, prev_proc, after_results) {
 
         var first = true;
         for (const row of result) {
+            for (const cell of row) {
+                if (cell && cell.startsWith("ERROR:")) {
+                    alert(cell);
+                }
+            }
+
             const tr = format_row(row, first, result[0]);
             if (first) {
                 const thead = document.createElement('thead');
