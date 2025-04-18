@@ -997,7 +997,7 @@ async function callProcedureListEditDelete(object, params = {}) {
 
 // Generate a form for calling a procedure, the results of which are pushed
 // into the forms for outputs.  This just uses the first result, rather than
-// presenting the user with a choice linke callProcedureSelectOutput
+// presenting the user with a choice like callProcedureSelectOutput
 async function callProcedureOutput(params) {
     params = Object.assign({}, params);
     params.format_row = (row, first, headers) => {
@@ -1105,6 +1105,315 @@ function copyFromInput(src_proc, src_field, dest_proc, dest_field) {
     dest.value = src.value;
 }
 
+class WTB {
+    constructor(name) {
+        this.params = {
+            proc_name: name,
+            outputs: [],
+            links: {}
+        };
+    }
+
+    static clear() {
+        clearUI();
+    }
+
+    static parseQueryString(q) {
+        return parseQueryString(q);
+    }
+
+    static prefillForms() {
+        return prefillForms();
+    }
+
+    static async checkLogin() {
+        return await checkLogin();
+    }
+
+    static async logout() {
+        return await logout();
+    }
+
+    static async activateProcedure(proc_name) {
+        const form = wtb_query(proc_name, 'form');
+        if (form) {
+            await form.submit_form();
+        }
+    }
+
+    hideButton() {
+        this.params.show_button = false;
+        return this;
+    }
+
+    showHeader() {
+        this.params.show_header = true;
+        return this;
+    }
+
+    hideHeader() {
+        this.params.show_header = false;
+        return this;
+    }
+
+    addLink(name, details) {
+        this.params.links[name] = details;
+        return this;
+    }
+
+    inputSettings(settings) {
+        this.params.input_settings = settings;
+        return this;
+    }
+
+    outputSettings(settings) {
+        this.params.output_settings = settings;
+        return this;
+    }
+
+    static listEditDelete(object) {
+        let x = new WTB();
+        x.params = {};
+        x.params.links = {};
+        x.params.links['Edit'] = 'modify' + object;
+        x.params.links['Delete'] = 'delete' + object;
+        x.params.proc_name = 'list' + object + 's';
+        return x;
+    }
+
+    select(proc_name) {
+        let next_proc = this.params.proc_name;
+        let x = new WTB();
+        let params = {};
+        x.params = params;
+        params.links = {};
+        params.proc_name = proc_name;
+        params.format_row = (row, first, headers) => {
+            var tr = document.createElement('tr');
+
+            var first_cell = true;
+            for (let i=0; i < row.length; i++) {
+                const cell = row[i];
+                const header = headers[i];
+
+                var td;
+                if (first) {
+                    td = document.createElement('th');
+                    td.textContent = make_pretty(cell);
+                } else {
+                    td = document.createElement('td');
+                    if (first_cell) {
+                        var a = document.createElement('button');
+                        a.className = "btn btn-default";
+                        a.textContent = cell;
+                        td.appendChild(a);
+
+                        a.addEventListener('click', (event) => {
+                            for (var h of headers) {
+                                if (h[0] == '@') {
+                                    h = h.slice(1);
+                                }
+                                const f = wtb_query(params.next_proc, h);
+                                if (f) {
+                                    if (f.getAttribute('type') == 'checkbox') {
+                                        f.checked = cell != '0';
+                                    } else {
+                                        f.value = cell;
+                                    }
+                                }
+                            }
+                        });
+
+                    } else {
+                        td.textContent = cell;
+                    }
+                }
+                first_cell = false;
+                tr.appendChild(td);
+            }
+
+            return tr;
+        };
+        params.initial_style = 'none';
+
+        return x;
+    }
+
+    selectMany(proc_name) {
+        let next_proc = this.params.proc_name;
+        let x = new WTB();
+        let params = {};
+        x.params = params;
+        params.links = {};
+        params.proc_name = proc_name;
+        params.format_row = (row, first, headers) => {
+            var tr = document.createElement('tr');
+
+            var first_cell = true;
+            for (let i=0; i < row.length; i++) {
+                const cell = row[i];
+                var header = headers[i];
+                if (header[0] == '@') {
+                    header = header.slice(1);
+                }
+
+                var hidden = false;
+                if (header[0] == '_') {
+                    header = header.slice(1);
+                    hidden = true;
+                }
+
+                var td;
+                if (first) {
+                    if (first_cell) {
+                        const td = document.createElement('td');
+                        tr.appendChild(td);
+                    }
+                    td = document.createElement('th');
+                    td.textContent = make_pretty(cell);
+                    set_style_for_element({}, cell, td, hidden);
+                } else {
+                    td = document.createElement('td');
+                    td.setAttribute('data-wtb-column', header);
+
+                    if (first_cell) {
+                        const input = document.createElement('input');
+                        tr.appendChild(input);
+                        input.type = 'checkbox';
+                        input.setAttribute('class', 'wtb-select-many-checkbox');
+
+                        input.addEventListener('input', (event) => {
+                            const form = wtb_query(next_proc, 'form');
+                            const results = wtb_query('results', proc_name);
+                            const table = results.children[0];
+
+                            for (const e of form.elements) {
+                                const name = e.getAttribute('id');
+                                const parts = name.split('_');
+                                var items = [];
+
+                                // Skip the first header row
+                                const rows = table.querySelectorAll("tr");
+                                for (const result_row of rows) {
+                                    const checkbox = result_row.children[0];
+                                    if (!checkbox.checked) {
+                                        continue;
+                                    }
+
+                                    for (let j=1; j < result_row.children.length; j++) {
+                                        const result_cell = result_row.children[j];
+                                        const colname = result_cell.getAttribute('data-wtb-column');
+
+                                        if (colname == parts[1]) {
+                                            items.push(result_cell.textContent);
+                                        }
+                                    }
+                                }
+
+                                e.value = JSON.stringify(items);
+                            }
+
+                            if (params.select_many_action) {
+                                params.select_many_action(input, event);
+                            }
+                        });
+                    }
+                    td.textContent = cell;
+                    set_style_for_element({}, cell, td, hidden);
+                }
+                first_cell = false;
+                tr.appendChild(td);
+            }
+
+            return tr;
+        };
+        return x;
+    }
+
+    toggleAll() {
+        this.params.toggle_all = true;
+        return this;
+    }
+
+    procName(name) {
+        this.params.proc_name = name;
+        return this;
+    }
+
+    chain(prev_proc) {
+        this.params.prev_proc = prev_proc;
+        return this;
+    }
+
+    action(f) {
+        this.params.action = f;
+        return this;
+    }
+
+    selectManyAction(f) {
+        this.params.select_many_action = f;
+        return this;
+    }
+
+    afterResults(f) {
+        this.params.after_results = f;
+        return this;
+    }
+
+    addOutput(o) {
+        let params = this.params;
+        params.outputs.push(o.params.proc_name);
+        params.format_row = (row, first, headers) => {
+            if (!first) {
+                for (let i=0; i < row.length; i++) {
+                    for (const next of params.outputs) {
+                        var field = headers[i];
+                        if (field[0] == '@') {
+                            field = field.slice(1);
+                        }
+                        if (field[0] == '_') {
+                            field = field.slice(1);
+                        }
+                        const f = wtb_query(next, field);
+                        if (f) {
+                            if (f.getAttribute('type') == 'checkbox') {
+                                f.checked = row[i] != '0';
+                            } else {
+                                f.value = row[i];
+                            }
+                        }
+                    }
+                }
+            }
+        };
+        return this;
+    }
+
+    // Finish the form and activate it
+    async activate() {
+        this.params.activate = true;
+        await this.generate();
+    }
+
+    // Finish the form without activating it
+    async generate() {
+        await callProcedureFull(this.params);
+        if (this.params.toggle_all) {
+            let proc_name = this.params.proc_name;
+            const div = wtb_query(proc_name, 'div');
+            var a = document.createElement('a');
+            div.appendChild(a);
+            a.textContent = 'Toggle All';
+            a.addEventListener('click', (event) => {
+                const boxes = document.querySelectorAll(`#${proc_name}_div .wtb-select-many-checkbox`);
+                for (const b of boxes) {
+                    b.click();
+                }
+            });
+        }
+    }
+}
+
 async function get_grants() {
     var grants = await sql_exec("SHOW GRANTS");
     grants[0].shift();
@@ -1124,3 +1433,4 @@ async function get_grants() {
 
     return routines;
 }
+
