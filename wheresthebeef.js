@@ -1360,6 +1360,11 @@ class WTB {
         return this;
     }
 
+    rowFormatter(f) {
+        this.params.format_row = f;
+        return this;
+    }
+
     addOutput(o) {
         let params = this.params;
         params.outputs.push(o.params.proc_name);
@@ -1387,6 +1392,14 @@ class WTB {
             }
         };
         return this;
+    }
+
+    static query(proc, value) {
+        return wtb_query(proc, value);
+    }
+
+    static async exec(query) {
+        return sql_exec(query);
     }
 
     // Finish the form and activate it

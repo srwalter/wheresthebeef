@@ -222,6 +222,11 @@ make_pretty() function.
 
 Same as inputSettings, but controls rendering of the results.
 
+    rowFormatter(f)
+
+f will be called for each row, to allow the formatting behavior for each row to
+be customized.
+
 ### Alternate Constructors
     static listEditDelete(object)
 
@@ -255,3 +260,10 @@ Parse key/value pairs from the query string, and use those to prefill any
 matching form elements.  This should generally be called last after all WTB
 objects have been generated.
 
+    static query(proc_name, value)
+
+Retrieve the value from a given input in the form for proc_name.
+
+    static async exec(query)
+
+Directly execute the given SQL query
