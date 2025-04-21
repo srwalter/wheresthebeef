@@ -1402,6 +1402,10 @@ class WTB {
         return sql_exec(query);
     }
 
+    static async allRoutines() {
+        await allRoutines();
+    }
+
     // Finish the form and activate it
     async activate() {
         this.params.activate = true;

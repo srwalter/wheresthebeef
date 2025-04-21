@@ -10,28 +10,32 @@
         <script>
 database = "wheresthebeef";
 
-function listParts() {
-    clearUI();
-    callProcedureEditDelete('listParts', 'modifyPart', 'deletePart');
+async function listParts() {
+    WTB.clear();
+    await WTB.listEditDelete('Part').generate();
 }
 async function addToOrder() {
-    clearUI();
-    await callProcedureSelectOutput('lookupPart', 'addItemToOrder');
-    await callProcedureSelectOutput('lookupOrder', 'addItemToOrder');
-    await callProcedure({proc_name: 'addItemToOrder'});
-    await callProcedure({proc_name: 'showOrder', prev_proc: 'addItemToOrder'});
+    WTB.clear();
+    let x = new WTB('addItemToOrder');
+    await x.select('lookupPart').generate();
+    await x.select('lookupOrder').generate();
+    await x.generate();
+    await new WTB('showOrder')
+        .chain('addItemToOrder')
+        .generate();
 }
 async function createOrder() {
-    clearUI();
-    await callProcedureSelectOutput({proc_name: 'lookupCustomer', next_proc: 'createOrder'});
-    await callProcedure({proc_name: 'createOrder'});
+    WTB.clear();
+    let x = new WTB('createOrder');
+    await x.select('lookupCustomer').generate();
+    await x.generate();
 }
 async function onLoad() {
-    checkLogin();
-    var q = parseQueryString(window.location.search);
+    WTB.checkLogin();
+    var q = WTB.parseQueryString(window.location.search);
     if (q['proc']) {
-        await callProcedure({proc_name: q['proc']});
-        prefillForms();
+        await new WTB(q['proc']).generate();
+        WTB.prefillForms();
     }
 }
         </script>

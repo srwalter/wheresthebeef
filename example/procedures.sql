@@ -84,7 +84,7 @@ END //
 DROP PROCEDURE IF EXISTS addItemToOrder //
 CREATE PROCEDURE addItemToOrder (IN orderNumber INT, IN partNumber INT, OUT subTotal INT)
 BEGIN
-    SELECT MAX(itemNumber) FROM orderItems where customer.orderNumber = orderNumber INTO @item;
+    SELECT MAX(itemNumber) FROM orderItems where orderItems.orderNumber = orderNumber INTO @item;
     IF (@item IS NULL) THEN
         SET @item = 1;
     ELSE
@@ -101,8 +101,8 @@ CREATE PROCEDURE showOrder (IN orderNumber INT, OUT subTotal DECIMAL(10,2), OUT 
 BEGIN
     SET @orderNumber = orderNumber;
     SELECT orderNumber, firstName, lastName FROM orders NATURAL JOIN customers WHERE orders.orderNumber = orderNumber;
-    SELECT itemNumber, description, price FROM orderItems NATURAL JOIN catalog WHERE orders.orderNumber = orderNumber ORDER BY itemNumber;
-    SELECT SUM(price) FROM orderItems NATURAL JOIN catalog WHERE orders.orderNumber = orderNumber INTO subTotal;
+    SELECT itemNumber, description, price FROM orderItems NATURAL JOIN catalog WHERE orderItems.orderNumber = orderNumber ORDER BY itemNumber;
+    SELECT SUM(price) FROM orderItems NATURAL JOIN catalog WHERE orderItems.orderNumber = orderNumber INTO subTotal;
     SET taxes = subTotal * 0.06;
     SET total = subTotal + taxes;
 END //

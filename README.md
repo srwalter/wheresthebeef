@@ -61,6 +61,11 @@ If you name your procedures and parameters using camelCase or StudlyCaps, then
 they will be automatically converted to natural english spacing and
 capitalization.
 
+3) Import the procedures in procedures.sql (this repo) into your new DB.
+
+4) Run wheresthebeef (cargo run) and set up your HTTP server so that /database
+is proxied to its port (8080 by default)
+
 4) Create the schema for your tables.  I keep this in its own file, since it's
 only run once after DB creation.
 
@@ -267,3 +272,7 @@ Retrieve the value from a given input in the form for proc_name.
     static async exec(query)
 
 Directly execute the given SQL query
+
+    static async allRoutines()
+
+Generate a list of links to all of the routines available to the current user.

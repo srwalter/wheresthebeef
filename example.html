@@ -9,15 +9,15 @@
         <script src="./wheresthebeef.js"></script>
         <script>
 async function onLoad() {
-    if (!await checkLogin()) {
+    if (!await WTB.checkLogin()) {
         return;
     }
-    var q = parseQueryString(window.location.search);
+    var q = WTB.parseQueryString(window.location.search);
     if (q['proc']) {
-        await callProcedure(q['proc']);
-        prefillForms();
+        await new WTB(q['proc']).generate();
+        WTB.prefillForms();
     } else {
-        await allRoutines();
+        await WTB.allRoutines();
     }
 }
         </script>
